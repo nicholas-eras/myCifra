@@ -1,0 +1,52 @@
+.cifra-container{
+  width: 90%;
+  min-height: calc(100vh - 4rem);
+  margin: 2rem auto;
+  padding-bottom: 2rem;
+  background-color: aliceblue;
+  display: flex;
+  flex-direction: column;
+}
+
+.music-info{
+  display: flex;
+  flex-direction: column;
+}
+
+.cifra-container > .music-info > div{
+  width: calc(100% - 2rem);
+}
+
+.cifra-container > .music-info > div:nth-of-type(1){  
+  margin: 1rem 1rem 0rem 1rem;
+  font-size: 2rem;
+}
+
+.cifra-container > .music-info > div:nth-of-type(2){  
+  margin: 0rem 1rem;
+  font-size: 1rem;
+}
+
+.lyric{
+  margin: 1rem 1rem 0 1rem;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.lyric-block{
+  border: 1px solid gray;
+  display: flex;
+  flex-direction: column;
+  padding: 2rem;
+}
+.lyric-row{
+  font-size: 1.5rem;
+}
+#medidor {
+  position: absolute;
+  visibility: hidden;
+  white-space: pre;
+  font-size: 16px;
+  font-family: Arial, sans-serif;
+  padding: 5px;
+}
