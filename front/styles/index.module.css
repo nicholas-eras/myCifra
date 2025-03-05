@@ -1,0 +1,47 @@
+.table-container {
+  width: 80%;
+  margin: 20px auto;
+  padding: 20px;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.heading {
+  text-align: center;
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+
+.table {
+  width: 100%;
+  margin: 0 auto;
+  border-collapse: collapse;
+}
+
+.th, .td {
+  padding: 12px;
+  text-align: left;
+}
+
+.th {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.tb .tr:hover {
+  background-color: #ddd;
+  cursor: pointer;
+}
+
+.td {
+  font-size: 16px;
+}
+
+.link {
+  color: inherit;
+  text-decoration: none;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
