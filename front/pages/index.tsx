@@ -47,7 +47,6 @@ function App() {
             ))
           ) : (
             <tr className={styles.tr}>
-              <td colSpan={2} className={styles.td}>Carregando...</td>
             </tr>
           )}
         </tbody>

@@ -4,9 +4,11 @@ body {
   overflow-x: hidden;  
   background-color: #242424;
   margin: 0;
-  padding: 0;    
+  padding: 0;   
 }
-
+html{
+  font-size: 24px;
+}
 * {
   box-sizing: border-box;
   padding: 0;

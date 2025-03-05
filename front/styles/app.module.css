@@ -1,7 +1,7 @@
 .cifra-container{
   width: 90%;
   min-height: calc(100vh - 4rem);
-  margin: 2rem auto;
+  margin: 1rem auto;
   padding-bottom: 2rem;
   background-color: aliceblue;
   display: flex;

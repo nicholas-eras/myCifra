@@ -58,7 +58,7 @@ function Music() {
     element.style.border = "none";
     element.style.color = "orange";
     element.style.fontWeight = "bold";
-    element.style.fontSize = "1rem";
+    element.style.fontSize = "100%";
     const chordTempId = Date.now();
 
     element.addEventListener('mouseover', () => {
@@ -78,8 +78,8 @@ function Music() {
         id: chordTempId,
         lyricId :lyricId,
         chord: element.value,
-        width: `${Math.floor(chordMinWidthPixel)}px`,
-        marginLeft: `${chordToPlaceLeftMargin}%`
+        width: element.style.width,
+        marginLeft: element.style.marginLeft
       };
 
       setMusic((prevMusic: any) => {
