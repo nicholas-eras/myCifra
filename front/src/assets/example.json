@@ -4,132 +4,62 @@
     {
       "0": [
         {
+          "chord": "C",
           "width": "30px",
-          "position": "absolute",
-          "background": "transparent",
-          "marginLeft": "5.270228848614707%",
-          "zIndex": "10",
-          "border": "none",
-          "color": "orange",
-          "fontWeight": "bold",
-          "fontSize": "1rem",
-          "chord": "C"
+          "marginLeft": "5.270228848614707%"
         },
         {
+          "chord": "G/B",
           "width": "30px",
-          "position": "absolute",
-          "background": "transparent",
-          "marginLeft": "44.50482099812517%",
-          "zIndex": "10",
-          "border": "none",
-          "color": "orange",
-          "fontWeight": "bold",
-          "fontSize": "1rem",
-          "chord": "G/B"
+          "marginLeft": "44.50482099812517%"
         },
         {
+          "chord": "Am",
           "width": "30px",
-          "position": "absolute",
-          "background": "transparent",
-          "marginLeft": "54.59915781329049%",
-          "zIndex": "10",
-          "border": "none",
-          "color": "orange",
-          "fontWeight": "bold",
-          "fontSize": "1rem",
-          "chord": "Am"
+          "marginLeft": "54.59915781329049%"
         },
         {
+          "chord": "D",
           "width": "15px",
-          "position": "absolute",
-          "background": "transparent",
-          "marginLeft": "30.02992292354849%",
-          "zIndex": "10",
-          "border": "none",
-          "color": "orange",
-          "fontWeight": "bold",
-          "fontSize": "1rem",
-          "chord": "D"
+          "marginLeft": "30.02992292354849%"
         }
       ]
     },
     {
       "1": [
         {
+          "chord": "C",
           "width": "30px",
-          "position": "absolute",
-          "background": "transparent",
-          "marginLeft": "5.460688033806505%",
-          "zIndex": "10",
-          "border": "none",
-          "color": "orange",
-          "fontWeight": "bold",
-          "fontSize": "1rem",
-          "chord": "C"
+          "marginLeft": "5.460688033806505%"
         },
         {
+          "chord": "D",
           "width": "30px",
-          "position": "absolute",
-          "background": "transparent",
-          "marginLeft": "23.17339225664375%",
-          "zIndex": "10",
-          "border": "none",
-          "color": "orange",
-          "fontWeight": "bold",
-          "fontSize": "1rem",
-          "chord": "D"
+          "marginLeft": "23.17339225664375%"
         },
         {
+          "chord": "G/B",
           "width": "30px",
-          "position": "absolute",
-          "background": "transparent",
-          "marginLeft": "41.267014849864594%",
-          "zIndex": "10",
-          "border": "none",
-          "color": "orange",
-          "fontWeight": "bold",
-          "fontSize": "1rem",
-          "chord": "G/B"
+          "marginLeft": "41.267014849864594%"
         },
         {
+          "chord": "Am",
           "width": "30px",
-          "position": "absolute",
-          "background": "transparent",
-          "marginLeft": "53.45640270213969%",
-          "zIndex": "10",
-          "border": "none",
-          "color": "orange",
-          "fontWeight": "bold",
-          "fontSize": "1rem",
-          "chord": "Am"
+          "marginLeft": "53.45640270213969%"
         }
       ]
     },
     {
       "2": [
         {
+          "chord": "Am",
           "width": "12px",
-          "position": "absolute",
-          "background": "transparent",
-          "marginLeft": "339px",
-          "zIndex": "10",
-          "border": "none",
-          "color": "orange",
-          "fontWeight": "bold",
-          "fontSize": "1rem",
-          "chord": "Am"
+          "marginLeft": "339px"
         },
         {
+          "chord": "C",
           "width": "15px",
-          "position": "absolute",
-          "background": "transparent",
-          "marginLeft": "15.36456566378002%",
-          "zIndex": "10",
-          "border": "none",
-          "color": "orange",
-          "fontWeight": "bold",
-          "fontSize": "1rem",
-          "chord": "C"
+          "marginLeft": "15.36456566378002%"
         }
       ]
     },

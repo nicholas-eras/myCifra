@@ -1,0 +1,37 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Music {
+  id     Int      @id @default(autoincrement())
+  artist String
+  name   String
+
+  lyrics Lyric[]
+}
+
+model Lyric {
+  id        Int    @id @default(autoincrement())
+  lineIndex Int
+  text      String @db.Text
+  musicId   Int
+
+  music  Music @relation(fields: [musicId], references: [id], onDelete: Cascade)
+  chords Chord[]
+  @@unique([musicId, lineIndex])
+}
+
+model Chord {
+  id         Int    @id @default(autoincrement())
+  lyricId    Int
+  chord      String
+  width      String
+  marginLeft String
+
+  lyric Lyric @relation(fields: [lyricId], references: [id], onDelete: Cascade)
+}
