@@ -27,18 +27,18 @@ function App() {
   const handleClick = (e: React.MouseEvent<HTMLDivElement>, chordsRow:any) => {
     const mouseX: number = e.clientX;
     const div = e.currentTarget.getBoundingClientRect();
-    const divX: number = div.x;
+    const divX: number = div.left;
 
     const chordMinWidthRelative = 0.03;
     const chordMinWidthPixel = chordMinWidthRelative * div.width;
-    const chordToPlaceMargin: number = mouseX - divX;
-    const chordToPlaceLeftMargin: number = chordToPlaceMargin - chordMinWidthPixel / 2;
+    const chordToPlaceMargin: number = (mouseX-divX - chordMinWidthPixel/2);
+    const chordToPlaceLeftMargin: number = (chordToPlaceMargin / (div.width) * 100);
 
     const element = document.createElement("input");
     element.style.width = `${chordMinWidthPixel}px`;
     element.style.position = "absolute";
     element.style.background = "transparent";
-    element.style.marginLeft = `${chordToPlaceLeftMargin}px`;
+    element.style.marginLeft = `${chordToPlaceLeftMargin}%`;
     element.style.zIndex = "10";
     element.style.border = "none";
     element.style.color = "orange";
@@ -61,7 +61,7 @@ function App() {
         width: `${Math.floor(chordMinWidthPixel)}px`,
         position: "absolute",
         background: "transparent",
-        marginLeft: `${Math.floor(chordToPlaceLeftMargin)}px`,
+        marginLeft: `${(((mouseX-divX - chordMinWidthPixel/2))/ (div.width) * 100)}%`,
         zIndex: "10",
         border: "none",
         color: "orange",
@@ -102,7 +102,11 @@ function App() {
                     className="lyric-row"
                     key={`block-${i}-row-${j}-blank`}
                     onClick={(e) => handleClick(e, chords[j + i * numRowsPerColumn])}
-                    style={{ fontSize: "1rem" }}
+                    style={{
+                      fontSize: "1rem",
+                      position: "relative",
+                      border: "1px solid black"
+                    }}
                   >
                     &nbsp;
                     {Object.values(chords[j + i * numRowsPerColumn])[0]?.map((row: any, k: number) => (

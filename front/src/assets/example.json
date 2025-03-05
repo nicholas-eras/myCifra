@@ -4,22 +4,10 @@
     {
       "0": [
         {
-          "width": "10px",
+          "width": "30px",
           "position": "absolute",
           "background": "transparent",
-          "marginLeft": "29px",
-          "zIndex": "10",
-          "border": "none",
-          "color": "orange",
-          "fontWeight": "bold",
-          "fontSize": "1rem",
-          "chord": "F"
-        },
-        {
-          "width": "10px",
-          "position": "absolute",
-          "background": "transparent",
-          "marginLeft": "120px",
+          "marginLeft": "5.270228848614707%",
           "zIndex": "10",
           "border": "none",
           "color": "orange",
@@ -28,21 +16,94 @@
           "chord": "C"
         },
         {
-          "width": "10px",
+          "width": "30px",
           "position": "absolute",
           "background": "transparent",
-          "marginLeft": "256px",
+          "marginLeft": "44.50482099812517%",
           "zIndex": "10",
           "border": "none",
           "color": "orange",
           "fontWeight": "bold",
           "fontSize": "1rem",
-          "chord": "Em"
+          "chord": "G/B"
+        },
+        {
+          "width": "30px",
+          "position": "absolute",
+          "background": "transparent",
+          "marginLeft": "54.59915781329049%",
+          "zIndex": "10",
+          "border": "none",
+          "color": "orange",
+          "fontWeight": "bold",
+          "fontSize": "1rem",
+          "chord": "Am"
+        },
+        {
+          "width": "15px",
+          "position": "absolute",
+          "background": "transparent",
+          "marginLeft": "30.02992292354849%",
+          "zIndex": "10",
+          "border": "none",
+          "color": "orange",
+          "fontWeight": "bold",
+          "fontSize": "1rem",
+          "chord": "D"
         }
       ]
     },
     {
-      "1": []
+      "1": [
+        {
+          "width": "30px",
+          "position": "absolute",
+          "background": "transparent",
+          "marginLeft": "5.460688033806505%",
+          "zIndex": "10",
+          "border": "none",
+          "color": "orange",
+          "fontWeight": "bold",
+          "fontSize": "1rem",
+          "chord": "C"
+        },
+        {
+          "width": "30px",
+          "position": "absolute",
+          "background": "transparent",
+          "marginLeft": "23.17339225664375%",
+          "zIndex": "10",
+          "border": "none",
+          "color": "orange",
+          "fontWeight": "bold",
+          "fontSize": "1rem",
+          "chord": "D"
+        },
+        {
+          "width": "30px",
+          "position": "absolute",
+          "background": "transparent",
+          "marginLeft": "41.267014849864594%",
+          "zIndex": "10",
+          "border": "none",
+          "color": "orange",
+          "fontWeight": "bold",
+          "fontSize": "1rem",
+          "chord": "G/B"
+        },
+        {
+          "width": "30px",
+          "position": "absolute",
+          "background": "transparent",
+          "marginLeft": "53.45640270213969%",
+          "zIndex": "10",
+          "border": "none",
+          "color": "orange",
+          "fontWeight": "bold",
+          "fontSize": "1rem",
+          "chord": "Am"
+        }
+      ]
     },
     {
       "2": [
@@ -57,6 +118,18 @@
           "fontWeight": "bold",
           "fontSize": "1rem",
           "chord": "Am"
+        },
+        {
+          "width": "15px",
+          "position": "absolute",
+          "background": "transparent",
+          "marginLeft": "15.36456566378002%",
+          "zIndex": "10",
+          "border": "none",
+          "color": "orange",
+          "fontWeight": "bold",
+          "fontSize": "1rem",
+          "chord": "C"
         }
       ]
     },
