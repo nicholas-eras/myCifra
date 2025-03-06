@@ -1,12 +1,12 @@
 // src/app.module.ts
 import { Module } from '@nestjs/common';
-import { MusicModule } from './music/music.module';
+import { SongModule } from './song/song.module';
 import { PrismaModule } from './prisma/prisma.module';
 
 @Module({
   imports: [
     PrismaModule,
-    MusicModule,
+    SongModule,
   ],
 })
 export class AppModule {}

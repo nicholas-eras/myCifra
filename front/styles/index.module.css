@@ -12,7 +12,7 @@
   display: flex;
   flex-direction: row;
   align-items: center;
-  margin-bottom: 1rem;
+  margin-bottom: .5rem;
 }
 
 .heading {
@@ -21,10 +21,19 @@
   margin: auto;
 }
 
+.linkHeading {
+  position: absolute;
+  color: inherit;
+  text-decoration: none;
+  display: block;
+  right: 0px;
+}
+
 .table {
   width: 100%;
   margin: 0 auto;
   border-collapse: collapse;
+  border: 1px solid black;
 }
 
 .th, .td {

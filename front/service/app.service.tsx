@@ -1,9 +1,9 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/music";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
 
-const musicService = {
-  async createMusic(payload: any): Promise<any> {
+const songService = {
+  async createSong(payload: any): Promise<any> {
     try {
-      const response = await fetch(API_URL, {
+      const response = await fetch(`${API_URL}/song`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -12,52 +12,52 @@ const musicService = {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to create music');
+        throw new Error('Failed to create song');
       }
 
       const data: any = await response.json();
       return data;
     } catch (error) {
-      console.error('Error creating music:', error);
+      console.error('Error creating song:', error);
       throw error;
     }
   },
 
-  async getAllMusic(): Promise<any[]> {
+  async getAllSong(): Promise<any[]> {
     try {
-      const response = await fetch(API_URL);
+      const response = await fetch(`${API_URL}/song`);
 
       if (!response.ok) {
-        throw new Error('Failed to fetch all music');
+        throw new Error('Failed to fetch all song');
       }
 
       const data: any[] = await response.json();
       return data;
     } catch (error) {
-      console.error('Error fetching all music:', error);
+      console.error('Error fetching all song:', error);
       throw error;
     }
   },
 
-  async getMusicById(id: number): Promise<any> {
+  async getSongById(id: number): Promise<any> {
     try {
-      const response = await fetch(`${API_URL}/${id}`);
+      const response = await fetch(`${API_URL}/song/${id}`);
 
       if (!response.ok) {
-        throw new Error(`Failed to fetch music with ID ${id}`);
+        throw new Error(`Failed to fetch song with ID ${id}`);
       }
 
       const data: any = await response.json();
       return data;
     } catch (error) {
-      console.error(`Error fetching music with ID ${id}:`, error);
+      console.error(`Error fetching song with ID ${id}:`, error);
       throw error;
     }
   },
 
-  async updateMusic(id: number, payload: any): Promise<any> {
+  async updateSong(id: number, payload: any): Promise<any> {
     try {
-      const response = await fetch(`${API_URL}/${id}`, {
+      const response = await fetch(`${API_URL}/song/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -66,31 +66,31 @@ const musicService = {
       });
 
       if (!response.ok) {
-        throw new Error(`Failed to update music with ID ${id}`);
+        throw new Error(`Failed to update song with ID ${id}`);
       }
 
       const data: any = await response.json();
       return data;
     } catch (error) {
-      console.error(`Error updating music with ID ${id}:`, error);
+      console.error(`Error updating song with ID ${id}:`, error);
       throw error;
     }
   },
 
-  async deleteMusic(id: number): Promise<void> {
+  async deleteSong(id: number): Promise<void> {
     try {
-      const response = await fetch(`${API_URL}/${id}`, {
+      const response = await fetch(`${API_URL}/song/${id}`, {
         method: 'DELETE',
       });
 
       if (!response.ok) {
-        throw new Error(`Failed to delete music with ID ${id}`);
+        throw new Error(`Failed to delete song with ID ${id}`);
       }
     } catch (error) {
-      console.error(`Error deleting music with ID ${id}:`, error);
+      console.error(`Error deleting song with ID ${id}:`, error);
       throw error;
     }
   },
 };
 
-export default musicService;
+export default songService;

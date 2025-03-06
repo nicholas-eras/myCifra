@@ -7,7 +7,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Music {
+model Song {
   id     Int      @id @default(autoincrement())
   artist String
   name   String
@@ -19,11 +19,11 @@ model Lyric {
   id        Int    @id @default(autoincrement())
   lineIndex Int
   text      String @db.Text
-  musicId   Int
+  songId   Int
 
-  music  Music @relation(fields: [musicId], references: [id], onDelete: Cascade)
+  song  Song @relation(fields: [songId], references: [id], onDelete: Cascade)
   chords Chord[]
-  @@unique([musicId, lineIndex])
+  @@unique([songId, lineIndex])
 }
 
 model Chord {

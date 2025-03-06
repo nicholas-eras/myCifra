@@ -1,10 +1,10 @@
 -- CreateTable
-CREATE TABLE "Music" (
+CREATE TABLE "Song" (
     "id" SERIAL NOT NULL,
     "artist" TEXT NOT NULL,
     "name" TEXT NOT NULL,
 
-    CONSTRAINT "Music_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "Song_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -12,7 +12,7 @@ CREATE TABLE "Lyric" (
     "id" SERIAL NOT NULL,
     "lineIndex" INTEGER NOT NULL,
     "text" TEXT NOT NULL,
-    "musicId" INTEGER NOT NULL,
+    "songId" INTEGER NOT NULL,
 
     CONSTRAINT "Lyric_pkey" PRIMARY KEY ("id")
 );
@@ -29,7 +29,7 @@ CREATE TABLE "Chord" (
 );
 
 -- AddForeignKey
-ALTER TABLE "Lyric" ADD CONSTRAINT "Lyric_musicId_fkey" FOREIGN KEY ("musicId") REFERENCES "Music"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "Lyric" ADD CONSTRAINT "Lyric_songId_fkey" FOREIGN KEY ("songId") REFERENCES "Song"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Chord" ADD CONSTRAINT "Chord_lyricId_fkey" FOREIGN KEY ("lyricId") REFERENCES "Lyric"("id") ON DELETE CASCADE ON UPDATE CASCADE;
