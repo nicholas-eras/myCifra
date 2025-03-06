@@ -21,33 +21,14 @@
   margin: auto;
 }
 
-.table {
-  width: 100%;
-  margin: 0 auto;
-  border-collapse: collapse;
-}
-
-.th, .td {
-  padding: 12px;
-  text-align: left;
-}
-
-.th {
-  background-color: #4CAF50;
-  color: white;
-}
-
-.tb .tr:hover {
-  background-color: #ddd;
-  cursor: pointer;
-}
-
-.td {
-  font-size: 16px;
-}
-
 .link {
+  position: absolute;
   color: inherit;
   text-decoration: none;
   display: block;
+  right: 0px;
+}
+
+.textArea{
+  width: 100%;
 }

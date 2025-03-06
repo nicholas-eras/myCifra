@@ -21,7 +21,12 @@ function App() {
 
   return (
     <div className={styles['table-container']}>
-      <h2 className={styles.heading}>Lista de Músicas</h2>
+      <div className={styles.headingRow}>
+        <h2 className={styles.heading}>Lista de Músicas</h2>
+        <Link href={`/music`} className={styles.link}>
+          Criar música
+        </Link>
+      </div>      
       <table className={styles.table}>
         <thead>
           <tr className={styles.tr}>

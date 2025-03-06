@@ -1,0 +1,12 @@
+services:
+  postgres:
+    image: postgres:17
+    container_name: postgres
+    ports:
+      - 5433:5432
+    environment:
+      - POSTGRES_PASSWORD=postgres2024
+      - POSTGRES_USER=postgres
+      - POSTGRES_DB=mycifras
+    volumes:
+      - ./back/db/:/var/lib/postgresql/data/
