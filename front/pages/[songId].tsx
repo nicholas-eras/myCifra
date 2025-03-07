@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import styles from '../styles/app.module.css';
 import { useRouter } from "next/router";
 import songService from '../service/app.service';
@@ -13,19 +13,22 @@ function Song() {
 
   const tunes = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 
-  const fontSizeRelativeDiv = 80;
-  const numRowsPerColumn = 20;
+  const fontSize = 16;
+  const fontSizeRelativeDiv = 90;
+  const chordCharSize = fontSizeRelativeDiv * fontSize / 100;
+
+  const numRowsPerColumn = 20;  
+
+  const fetchSongData = async(id: number) =>  {      
+    const data = await songService.getSongById(id);
+    setSong(data);                     
+  }
 
   useEffect(() => {    
     if (songId) {
       fetchSongData(+songId);
     }
   }, [songId]);
-
-  const fetchSongData = async(id: number) =>  {      
-      const data = await songService.getSongById(id);
-      setSong(data);                     
-  }
 
   useEffect(() => {
     if (!song || !song.lyrics) {return}
@@ -39,6 +42,24 @@ function Song() {
     });
     setLyricBlocks(initialChordBlocks);
   }, [song]);
+
+  useEffect(() => {
+    if (lyricBlocks.length > 0) {
+      lyricBlocks.forEach((block, i) => {
+        block.forEach((lyric, j) => {
+          adjustChordsDivWidth(`block-${i}-row-${j}-nonblank`, `block-${i}-row-${j}-blank`);
+        });
+      });
+    }
+  }, [lyricBlocks]);
+
+  const adjustChordsDivWidth = (lyricDivId: string, chordsDivId: string) => {
+    const lyricDiv = document.getElementById(lyricDivId);
+    const chordsDiv = document.getElementById(chordsDivId);
+    if (lyricDiv && chordsDiv) {      
+      chordsDiv.style.width = `${lyricDiv.getBoundingClientRect().width}px`            
+    }    
+  };
   
   if (!song) {
     return <div>Loading...</div>;
@@ -50,15 +71,22 @@ function Song() {
     blockId: number,
     rowId: number,
   ) => {
+    const lyricElement = document.getElementById(`block-${blockId}-row-${rowId}-nonblank`);
+    (e.currentTarget as HTMLElement).style.width = "100%";
+    if (lyricElement){
+      (e.currentTarget as HTMLElement).style.width = `${lyricElement.getBoundingClientRect().width}px`;
+    }
+
     const mouseX: number = e.clientX;
-    const div = e.currentTarget.getBoundingClientRect();
+    const div = e.currentTarget.getBoundingClientRect();    
     const divX: number = div.left;
-  
+
     const chordMinWidthRelative = 0.035;
     const chordMinWidthPixel = chordMinWidthRelative * div.width;
+    
     const chordToPlaceMargin: number = (mouseX - divX - chordMinWidthPixel / 2);
     const chordToPlaceLeftMargin: number = (chordToPlaceMargin / (div.width) * 100);
-  
+
     const element = document.createElement("input");
     element.style.width = `${chordMinWidthPixel}px`;
     element.style.height = `100%`;
@@ -70,7 +98,7 @@ function Song() {
     element.style.color = "orange";
     element.style.fontWeight = "bold";
     element.style.fontSize = `${fontSizeRelativeDiv}%`;
-  
+
     setTempChordsCounter(tempChordsCounter + 1);
     const chordTempId = -1 * parseInt(`${blockId}${rowId}${tempChordsCounter}`);
   
@@ -110,7 +138,9 @@ function Song() {
         return songCopy;
       });
   
-      element.remove();
+      if (element.parentElement) {
+        element.remove();
+      }   
     });
   
     element.addEventListener('click', (e) => {
@@ -166,15 +196,19 @@ function Song() {
       ...prevSong,
       lyrics: prevSong.lyrics?.map((lyric) => ({
         ...lyric,
-        chords: lyric.chords.map((chordInfo: { chord: string; }) => ({
-          ...chordInfo,
-          chord: changeChord(chordInfo.chord, increment),
-        })),
+        chords: lyric.chords.map((chordInfo: any) => {
+          const { chord: newChord, width: newWidth } = changeChord(chordInfo.chord, increment, chordInfo.width);
+          return {
+            ...chordInfo,
+            chord: newChord,
+            width: newWidth
+          };
+        }),
       })),
     }));
-  };
+  };  
 
-  const changeChord = (chord: string, increment: string) => {   
+  const changeChord = (chord: string, increment: string, currentWidth: string) => {   
     let chordCopy = chord;
     let newChord = [];
     let currentTune;    
@@ -209,8 +243,15 @@ function Song() {
         tunes[increment === "+" ? currentTuneIndex + 1 : currentTuneIndex - 1]
         : currentTune;    
       newChord.push(currentTune);
-    }        
-    return newChord.join("");
+    }
+
+    const widthValue:number = +currentWidth.split("px")[0];
+    const newWidthValue = `${widthValue + chordCharSize*(newChord.join("").length - chord.length)}px`;
+    
+    return {
+      chord: newChord.join(""),
+      width: newWidthValue
+    };
   }
 
   return (
@@ -303,6 +344,7 @@ function Song() {
                     <div
                       className={styles["lyric-row"]}
                       key={`block-${i}-row-${j}-blank`}
+                      id={`block-${i}-row-${j}-blank`}
                       onClick={(e) => handleClick(e, lyric.id, i, j)}
                       style={{
                         fontSize: `${fontSizeRelativeDiv}%`,
@@ -336,9 +378,27 @@ function Song() {
                           value={chord.chord}
                         />
                       ))}
-                    </div>
-                    <div className="lyric-row" key={`block-${i}-row-${j}-nonblank`}>
-                      {j === 0 ? `${i + 1})` : `\u00A0 \u00A0`} {lyric.text}
+                    </div>                    
+                    <div
+                      className="lyric-row"
+                      key={`block-${i}-row-${j}-nonblank`}
+                      style={{
+                        display:"inline-block",
+                        whiteSpace:"nowrap",
+                        paddingRight:"0.5rem",
+                        marginLeft:"1rem",
+                      }}
+                      id={`block-${i}-row-${j}-nonblank`}
+                    >
+                      {j === 0 ? (
+                        <div className="counter" style={{
+                          position:"absolute",
+                          marginLeft:"-1rem"
+                        }}>
+                          {i + 1}
+                        </div>
+                        )
+                         : ``} {lyric.text}
                     </div>
                   </>
                   )}                  

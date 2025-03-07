@@ -73,10 +73,9 @@
   border: 1px solid gray;
   display: flex;
   flex-direction: column;
+  overflow-x: auto;
 }
-.lyric-row{
-  font-size: 1.5rem;
-}
+
 #medidor {
   position: absolute;
   visibility: hidden;
