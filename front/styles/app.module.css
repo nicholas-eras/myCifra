@@ -31,15 +31,39 @@
   margin: auto 1rem auto auto;
 }
 
+.tune{
+  display: flex;
+  width: 20%;
+  margin: 0 auto;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.tune button {
+  padding: 0.25rem .75rem;
+  font-size: 1rem;
+  color: #fff;
+  background-color: #4CAF50;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.tune button:hover {
+  background-color: #0056b3;
+}
+
 .lyric{
-  margin: 1rem 1rem 0 1rem;
+  margin: 0rem 1rem;
   display: grid;
   grid-template-columns: repeat(2, 1fr);
 }
 
-@media screen and (max-width: 400px) {
+@media screen and (max-width: 800px) {
   .lyric{
-    margin: 1rem 1rem 0 1rem;
+    margin: 0rem 1rem;
     display: grid;
     grid-template-columns: repeat(1, 1fr);
   }

@@ -10,6 +10,9 @@ function Song() {
   const [song, setSong] = useState<any | null>(null);
   const [lyricBlocks, setLyricBlocks] = useState<any[][]>([]);
   const [tempChordsCounter, setTempChordsCounter] = useState<number>(0);
+
+  const tunes = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+
   const fontSizeRelativeDiv = 80;
   const numRowsPerColumn = 20;
 
@@ -119,7 +122,7 @@ function Song() {
     });
   
     const adjustWidth = () => {
-      element.style.width = `${Math.max(element.scrollWidth, chordMinWidthPixel) + 1}px`;
+      element.style.width = `${Math.max(element.scrollWidth, chordMinWidthPixel) + 4}px`;
     };
   
     element.addEventListener('input', adjustWidth);
@@ -132,7 +135,7 @@ function Song() {
     setSong((prevSong: any) => {
       const newSong = {
         ...prevSong,
-        lyrics: prevSong.lyrics.map((lyric: any) => ({
+        lyrics: prevSong.lyrics?.map((lyric: any) => ({
           ...lyric,
           chords: lyric.chords.filter((chord: any) => chord.id !== chordId),
         })),
@@ -150,14 +153,56 @@ function Song() {
     };
 
     try {
-      const updatedSong = await songService.updateSong(song.id, payload);  
-      setSong(updatedSong);
+      await songService.updateSong(song.id, payload);  
       alert('Música atualizada com sucesso!');
     } catch (error) {
       console.error('Erro ao atualizar música:', error);
       alert('Erro ao atualizar música');
     }
   };
+
+  const changeTune = (increment: string) => {
+    setSong((prevSong: { lyrics: any[]; }) => ({
+      ...prevSong,
+      lyrics: prevSong.lyrics?.map((lyric) => ({
+        ...lyric,
+        chords: lyric.chords.map((chordInfo: { chord: string; }) => ({
+          ...chordInfo,
+          chord: changeChord(chordInfo.chord, increment),
+        })),
+      })),
+    }));
+  };
+
+  const changeChord = (chord: string, increment: string) => {
+    let chordCopy = chord;
+    let chordDetail = "";
+    if (chordCopy.length > 1){
+      chordDetail = chordCopy.substring(1);
+      if (chordCopy[1] == "#" || chordCopy[1] == "b"){
+        chordDetail = chordDetail.substring(1);
+        chordCopy = chordCopy.substring(0, 2);        
+      }
+      else{
+        chordCopy = chordCopy.substring(0, 1);        
+      }
+    } 
+
+    let currentTuneIndex = tunes.indexOf(chordCopy);    
+
+    if (increment === "+"){
+      while (currentTuneIndex >= tunes.length - 1){      
+        currentTuneIndex -= tunes.length;
+      }  
+    }
+    else{
+      while (currentTuneIndex <= 0){
+        currentTuneIndex += tunes.length;
+      }
+    }
+
+    return tunes[increment === "+" ? currentTuneIndex + 1 : currentTuneIndex - 1] + chordDetail;
+  }
 
   return (
     <>
@@ -195,6 +240,10 @@ function Song() {
               </button>
             </Link>            
           </div>
+        </div>
+        <div className={styles["tune"]}>
+          <button onClick={()=>changeTune("-")}>-</button>
+          <button onClick={()=>changeTune("+")}>+</button>
         </div>
         <div className={styles["lyric"]}>
         {lyricBlocks.map((block, i) => (
