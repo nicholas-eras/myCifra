@@ -174,34 +174,43 @@ function Song() {
     }));
   };
 
-  const changeChord = (chord: string, increment: string) => {
+  const changeChord = (chord: string, increment: string) => {   
     let chordCopy = chord;
-    let chordDetail = "";
-    if (chordCopy.length > 1){
-      chordDetail = chordCopy.substring(1);
-      if (chordCopy[1] == "#" || chordCopy[1] == "b"){
-        chordDetail = chordDetail.substring(1);
-        chordCopy = chordCopy.substring(0, 2);        
+    let newChord = [];
+    let currentTune;    
+    for (let i = 0; i < chordCopy.length; i++){      
+      currentTune = chordCopy[i];
+      if (!tunes.includes(currentTune) && (chordCopy[i] === "#" || chordCopy[i] === "b")){
+        continue;
+      }    
+      if (currentTune == "#" && newChord[i-1] == "E"){
+        newChord[i-1] = "F";
+        currentTune = "";
+      }
+      if (currentTune == "b" && newChord[i-1] == "F"){
+        newChord[i-1] = "E";
+        currentTune = "";
+      }     
+      if (chordCopy[i+1] == "#" || chordCopy[i+1] == "b"){
+        currentTune = chordCopy.substring(i, i+2);        
+      }        
+      let currentTuneIndex = tunes.indexOf(currentTune);    
+      if (increment === "+"){
+        while (currentTuneIndex >= tunes.length - 1){      
+          currentTuneIndex -= tunes.length;
+        }  
       }
       else{
-        chordCopy = chordCopy.substring(0, 1);        
-      }
-    } 
-
-    let currentTuneIndex = tunes.indexOf(chordCopy);    
-
-    if (increment === "+"){
-      while (currentTuneIndex >= tunes.length - 1){      
-        currentTuneIndex -= tunes.length;
-      }  
-    }
-    else{
-      while (currentTuneIndex <= 0){
-        currentTuneIndex += tunes.length;
-      }
-    }
-
-    return tunes[increment === "+" ? currentTuneIndex + 1 : currentTuneIndex - 1] + chordDetail;
+        while (currentTuneIndex <= 0){
+          currentTuneIndex += tunes.length;
+        }
+      }        
+      currentTune = tunes.includes(currentTune) ?
+        tunes[increment === "+" ? currentTuneIndex + 1 : currentTuneIndex - 1]
+        : currentTune;    
+      newChord.push(currentTune);
+    }        
+    return newChord.join("");
   }
 
   return (
