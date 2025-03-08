@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import styles from '../styles/app.module.css';
 import { useRouter } from "next/router";
 import songService from '../service/app.service';
@@ -23,7 +23,7 @@ function Song() {
     const data = await songService.getSongById(id);
     setSong(data);                     
   }
-
+    
   useEffect(() => {    
     if (songId) {
       fetchSongData(+songId);
@@ -43,14 +43,54 @@ function Song() {
     setLyricBlocks(initialChordBlocks);
   }, [song]);
 
-  useEffect(() => {
+  // let myObserver:any;
+  // if (typeof window !== "undefined"){
+  //    myObserver = new ResizeObserver(entries => {    
+  //     entries.forEach(entry => {
+  //       const lyricChordsDiv = entry.contentRect;
+  //       const lyricDiv = document.querySelector(`#${entry.target.id}-nonblank`);
+  //       const chordsDiv = document.querySelector(`#${entry.target.id}-blank`);
+  //       const lyricChordsDivWidth = lyricChordsDiv.width;
+  //       const lyricDivWidth = lyricDiv?.getBoundingClientRect().width;          
+
+  //       if (!lyricDivWidth){ return }
+  //       if (lyricChordsDivWidth < lyricDivWidth){
+  //         const lyric = lyricDiv.textContent;
+  //         if (!lyric){ return }
+  //         const lyricArray = lyric.split(" ");
+  //         const lyricFirst = lyricArray?.slice(0, Math.floor(lyricArray.length / 2)).join(" ");
+  //         const lyricSecond = lyricArray?.slice(Math.floor(lyricArray.length / 2)).join(" ");
+  //         const lyricFirstChords: any = [];
+  //         const lyricSecondChords: any = [];
+  //         if (chordsDiv){ 
+  //           Array.from(chordsDiv.children).forEach(child => {
+  //             const chordMarginLeftValue = +(child as HTMLElement).style.marginLeft.split("%")[0];
+  //             if (chordMarginLeftValue > 50){
+  //               (child as HTMLElement).style.marginLeft = `${chordMarginLeftValue - 50}%`;
+  //               lyricSecondChords.push(child);
+  //             }
+  //             else{
+  //               lyricFirstChords.push(child) 
+  //             }              
+  //           });
+  //         }          
+  //       }
+  //     });
+  //   });   
+  // }  
+
+  useEffect(() => {    
     if (lyricBlocks.length > 0) {
       lyricBlocks.forEach((block, i) => {
-        block.forEach((lyric, j) => {
+        block.forEach((_, j) => {          
+          // const someEl = document.querySelector(`#block-${i}-row-${j}`);
+          // if (someEl){            
+          //   myObserver.observe(someEl);
+          // }
           adjustChordsDivWidth(`block-${i}-row-${j}-nonblank`, `block-${i}-row-${j}-blank`);
         });
       });
-    }
+    }    
   }, [lyricBlocks]);
 
   const adjustChordsDivWidth = (lyricDivId: string, chordsDivId: string) => {
@@ -58,8 +98,8 @@ function Song() {
     const chordsDiv = document.getElementById(chordsDivId);
     if (lyricDiv && chordsDiv) {      
       chordsDiv.style.width = `${lyricDiv.getBoundingClientRect().width}px`            
-    }    
-  };
+    }
+  };   
   
   if (!song) {
     return <div>Loading...</div>;
@@ -295,56 +335,16 @@ function Song() {
           <button onClick={()=>changeTune("-")}>-</button>
           <button onClick={()=>changeTune("+")}>+</button>
         </div>
-        <div className={styles["lyric"]}>
-        {lyricBlocks.map((block, i) => (
-          <div className={styles["lyric-block"]} key={`block-${i}`}>
-            {block.map((lyric, j) => {     
-              return (
-                <div key={`block-${i}-row-${j}`}>
-                  {lyric.text === "" ? (
-                    <div
-                    className={styles["lyric-row"]}
-                    key={`block-${i}-row-${j}-blank`}
-                    onClick={(e) => handleClick(e, lyric.id, i, j)}
-                    style={{
-                      fontSize: `${fontSizeRelativeDiv}%`,
-                      position: "relative",
-                    }}
-                  >
-                    &nbsp;
-                    {lyric.chords.map((chord: any, k: number) => (
-                      <input
-                        key={`block-${i}-row-${j}-chord-${k}`}
-                        style={{
-                          width: chord.width,
-                          position: "absolute",
-                          verticalAlign: "bottom",
-                          height: "100%",
-                          background: "transparent",
-                          marginLeft: chord.marginLeft,
-                          zIndex: "10",
-                          border: "none",
-                          color: "orange",
-                          fontWeight: "bold",
-                          fontSize: `${fontSizeRelativeDiv}%`,
-                        }}
-                        readOnly
-                        onMouseOver={(e) => (e.currentTarget.style.cursor = "pointer")}
-                        onMouseOut={(e) => (e.currentTarget.style.cursor = "default")}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDeleteChord(chord.id);                          
-                        }}
-                        value={chord.chord}
-                      />
-                    ))}
-                  </div>
-                  ) : (
-                    <>
-                    <div
+        <div className={styles["lyric"]} id='blocksContainer'>
+          {lyricBlocks.map((block, i) => (
+            <div className={styles["lyric-block"]} key={`block-${i}`}>
+              {block.map((lyric, j) => {     
+                return (
+                  <div key={`block-${i}-row-${j}`} id={`block-${i}-row-${j}`}>
+                    {lyric.text === "" ? (
+                      <div
                       className={styles["lyric-row"]}
                       key={`block-${i}-row-${j}-blank`}
-                      id={`block-${i}-row-${j}-blank`}
                       onClick={(e) => handleClick(e, lyric.id, i, j)}
                       style={{
                         fontSize: `${fontSizeRelativeDiv}%`,
@@ -378,35 +378,75 @@ function Song() {
                           value={chord.chord}
                         />
                       ))}
-                    </div>                    
-                    <div
-                      className="lyric-row"
-                      key={`block-${i}-row-${j}-nonblank`}
-                      style={{
-                        display:"inline-block",
-                        whiteSpace:"nowrap",
-                        paddingRight:"0.5rem",
-                        marginLeft:"1rem",
-                      }}
-                      id={`block-${i}-row-${j}-nonblank`}
-                    >
-                      {j === 0 ? (
-                        <div className="counter" style={{
-                          position:"absolute",
-                          marginLeft:"-1rem"
-                        }}>
-                          {i + 1}
-                        </div>
-                        )
-                         : ``} {lyric.text}
                     </div>
-                  </>
-                  )}                  
-                </div>
-              );
-            })}
-          </div>
-        ))}
+                    ) : (
+                      <>
+                      <div
+                        className={styles["lyric-row"]}
+                        key={`block-${i}-row-${j}-blank`}
+                        id={`block-${i}-row-${j}-blank`}
+                        onClick={(e) => handleClick(e, lyric.id, i, j)}
+                        style={{
+                          fontSize: `${fontSizeRelativeDiv}%`,
+                          position: "relative",
+                        }}
+                      >
+                        &nbsp;
+                        {lyric.chords.map((chord: any, k: number) => (
+                          <input
+                            key={`block-${i}-row-${j}-chord-${k}`}
+                            style={{
+                              width: chord.width,
+                              position: "absolute",
+                              verticalAlign: "bottom",
+                              height: "100%",
+                              background: "transparent",
+                              marginLeft: chord.marginLeft,
+                              zIndex: "10",
+                              border: "none",
+                              color: "orange",
+                              fontWeight: "bold",
+                              fontSize: `${fontSizeRelativeDiv}%`,
+                            }}
+                            readOnly
+                            onMouseOver={(e) => (e.currentTarget.style.cursor = "pointer")}
+                            onMouseOut={(e) => (e.currentTarget.style.cursor = "default")}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteChord(chord.id);                          
+                            }}
+                            value={chord.chord}
+                          />
+                        ))}
+                      </div>                    
+                      <div
+                        className="lyric-row"
+                        key={`block-${i}-row-${j}-nonblank`}
+                        style={{
+                          display:"inline-block",
+                          whiteSpace:"nowrap",
+                          paddingRight:"0.5rem",
+                          marginLeft:"1rem",
+                        }}
+                        id={`block-${i}-row-${j}-nonblank`}
+                      >
+                        {j === 0 ? (
+                          <div className="counter" style={{
+                            position:"absolute",
+                            marginLeft:"-1rem"
+                          }}>
+                            {i + 1}
+                          </div>
+                          )
+                          : ``} {lyric.text}
+                      </div>
+                    </>
+                    )}                  
+                  </div>
+                );
+              })}
+            </div>
+          ))}
         </div>
       </div>
     </>
