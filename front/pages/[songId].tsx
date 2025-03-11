@@ -63,7 +63,8 @@ function Song() {
     lyricId: number,
     blockId: number,
     rowId: number,
-    wordIndex: number
+    wordIndex: number,
+    height?: number,
   ) => {        
     const mouseX: number = e.clientX;
     const div = e.currentTarget.getBoundingClientRect();    
@@ -76,7 +77,7 @@ function Song() {
 
     const element = document.createElement("input");
     element.style.width = `1.5ch`;
-    element.style.height = `50%`;
+    element.style.height = height ? "100%" : `50%`;
     element.style.position = "absolute";
     element.style.background = "transparent";
     element.style.marginLeft = `${chordToPlaceLeftMargin}%`;
@@ -306,7 +307,7 @@ function Song() {
                       <div
                         className={styles["lyric-row"]}
                         key={`block-${i}-row-${j}-blank`}
-                        onClick={(e) => handleClick(e, lyric.id, i, j, 0)}
+                        onClick={(e) => handleClick(e, lyric.id, i, j, 0, 100)}
                         style={{
                           fontSize: `${fontSizeRelativeDiv}%`,
                           display: "flex",
@@ -317,45 +318,34 @@ function Song() {
                           height: "2ch",
                         }}
                       >
-                        {lyric.chords.map((chord: any, k: any) => (
-                          <div
-                            key={`block-${i}-row-${j}-chord-${k}`}
-                            className={styles["word-chord"]}
+                        {lyric.chords.map((chord: any, k: any) => (                       
+                          <input
                             style={{
-                              display: "flex",
-                              flexDirection: "column",
-                              alignItems: "flex-start",
-                              position: "relative",
+                              width: chord.width || "auto",
+                              marginLeft: `${chord.offset * 100}%`,
+                              background: "transparent",
+                              border: "none",
+                              color: "orange",
+                              fontFamily: "monospace",
+                              fontWeight: "bold",
+                              position: "absolute",
+                              fontSize: `${fontSizeRelativeDiv}%`,
                             }}
-                          >
-                            <input
-                              style={{
-                                width: chord.width || "auto",
-                                marginLeft: `${chord.offset * 100}%`,
-                                background: "transparent",
-                                border: "none",
-                                color: "orange",
-                                fontFamily: "monospace",
-                                fontWeight: "bold",
-                                fontSize: `${fontSizeRelativeDiv}%`,
-                              }}
-                              readOnly
-                              onMouseOver={(e) => {                                
-                                e.currentTarget.style.cursor = "pointer";
-                                e.currentTarget.style.border = "1px solid black";
-                              }}
-                              onMouseOut={(e) => {
-                                e.currentTarget.style.cursor = "default";
-                                e.currentTarget.style.border = "none";
-                              }}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDeleteChord(chord.id);
-                              }}
-                              value={chord.chord}
-                            />
-                            <span className={styles["word"]}> </span>
-                          </div>
+                            readOnly
+                            onMouseOver={(e) => {                                
+                              e.currentTarget.style.cursor = "pointer";
+                              e.currentTarget.style.border = "1px solid black";
+                            }}
+                            onMouseOut={(e) => {
+                              e.currentTarget.style.cursor = "default";
+                              e.currentTarget.style.border = "none";
+                            }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteChord(chord.id);
+                            }}
+                            value={chord.chord}
+                          />
                         ))}
                       </div>
                       ) : null
