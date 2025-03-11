@@ -1,10 +1,11 @@
 export interface Chord {
   id?: number;
   chord: string;
-  width: string;
-  marginLeft: string;
+  position: number;
+  offset: number;
   lineIndex: number;
   lyricId: number;
+  width: string;
 }
 
 interface LyricLine {

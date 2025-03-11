@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Delete, Body, Param } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, ParseIntPipe } from '@nestjs/common';
 import { SongService } from './song.service';
 import { CreateSongDto, UpdateSongDto } from './dto/song.dto';
 
@@ -31,8 +31,8 @@ export class SongController {
     return this.songService.remove(+id);
   }
 
-  @Post(':songId/chords')
-  updateChords(@Param('songId') id: number, @Body() updateSongChords: UpdateSongDto) {
+  @Put(':songId/chords')
+  updateChords(@Param('songId', ParseIntPipe) id: number, @Body() updateSongChords: UpdateSongDto) {
     return this.songService.updateChords(id, updateSongChords);
   }
 }

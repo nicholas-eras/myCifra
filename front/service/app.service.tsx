@@ -55,9 +55,9 @@ const songService = {
     }
   },
 
-  async updateSong(id: number, payload: any): Promise<any> {
+  async updateSongChords(id: number, payload: any): Promise<any> {
     try {
-      const response = await fetch(`${API_URL}/song/${id}`, {
+      const response = await fetch(`${API_URL}/song/${id}/chords`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

@@ -30,8 +30,9 @@ model Chord {
   id         Int    @id @default(autoincrement())
   lyricId    Int
   chord      String
+  position   Int
+  offset     Float
   width      String
-  marginLeft String
-
+  
   lyric Lyric @relation(fields: [lyricId], references: [id], onDelete: Cascade)
 }

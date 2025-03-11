@@ -112,8 +112,9 @@ export class SongService {
           data:{
             lyricId: lyric.id,
             chord: chordInfo.chord,
-            width: chordInfo.width,
-            marginLeft: chordInfo.marginLeft
+            position: chordInfo.position,
+            offset: chordInfo.offset,
+            width: chordInfo.width
           }
         });
       });
@@ -122,6 +123,13 @@ export class SongService {
 
   private async updateLyrics(newSongDto: UpdateSongDto, songId:number){
     if (!newSongDto.lyrics){ return };    
+    await this.prisma.chord.deleteMany({
+      where:{
+        lyric: {
+          songId: songId
+        }
+      }
+    });
 
     newSongDto.lyrics.forEach(async(lyricChords, i) => {
       const lyric = await this.prisma.lyric.upsert({
@@ -141,22 +149,15 @@ export class SongService {
           text:lyricChords.text,
           songId:songId
         }
-      });
-
+      });   
       lyricChords.chords.forEach(async(chordInfo) => {
-        await this.prisma.chord.deleteMany({
-          where:{
-            lyric: {
-              songId: songId
-            }
-          }
-        });
         await this.prisma.chord.create({
           data:{
             lyricId: lyric.id,
             chord: chordInfo.chord,
-            width: chordInfo.width,
-            marginLeft: chordInfo.marginLeft
+            position: chordInfo.position,
+            offset: chordInfo.offset,
+            width: chordInfo.width
           }
         });
       });
