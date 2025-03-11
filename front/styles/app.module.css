@@ -57,20 +57,13 @@
 
 .lyric{
   margin: 0rem 1rem;
+  padding-top: 1rem;
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-}
-
-@media screen and (max-width: 800px) {
-  .lyric{
-    margin: 0rem 1rem;
-    display: grid;
-    grid-template-columns: repeat(1, 1fr);
-  }
+  grid-template-columns: repeat(1, 1fr);
 }
 
 .lyric-block{
-  border: 1px solid gray;
+  /* border: 1px solid gray; */
   display: flex;
   flex-direction: column;
   overflow-x: auto;
@@ -81,6 +74,5 @@
   visibility: hidden;
   white-space: pre;
   font-size: 16px;
-  font-family: Arial, sans-serif;
   padding: 5px;
 }

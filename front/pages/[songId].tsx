@@ -3,6 +3,8 @@ import styles from '../styles/app.module.css';
 import { useRouter } from "next/router";
 import songService from '../service/app.service';
 import Link from 'next/link';
+import { TbColumns } from "react-icons/tb";
+import { RxColumns } from "react-icons/rx";
 
 function Song() {
   const router = useRouter();
@@ -10,12 +12,12 @@ function Song() {
   const [song, setSong] = useState<any | null>(null);
   const [lyricBlocks, setLyricBlocks] = useState<any[][]>([]);
   const [tempChordsCounter, setTempChordsCounter] = useState<number>(0);
+  const [isOneColumn, setIsOneColumn] = useState(true);
 
   const tunes = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 
   const fontSize = 16;
   const fontSizeRelativeDiv = 90;
-  const chordCharSize = fontSizeRelativeDiv * fontSize / 100;
 
   const numRowsPerColumn = 20;  
 
@@ -43,6 +45,15 @@ function Song() {
     setLyricBlocks(initialChordBlocks);
   }, [song]);
   
+  useEffect(() => {
+    const lyric = document.getElementById("blocksContainer");
+    if (lyric){
+      isOneColumn ? 
+      lyric.style.gridTemplateColumns = "repeat(1, 1fr)" :
+      lyric.style.gridTemplateColumns = "repeat(2, 1fr)";  
+    }    
+  }, [isOneColumn])
+
   if (!song) {
     return <div>Loading...</div>;
   }
@@ -58,14 +69,13 @@ function Song() {
     const div = e.currentTarget.getBoundingClientRect();    
     const divX: number = div.left;
     
-    const chordMinWidthRelative = 0.25;
-    const chordMinWidthPixel = chordMinWidthRelative * div.width;
-    
-    const chordToPlaceMargin: number = (mouseX - divX - chordMinWidthPixel / 2);
+    const chordMinWidthCH = 1;
+    const chordMinWidthPixel = fontSize * chordMinWidthCH;
+    const chordToPlaceMargin: number = (mouseX - divX - chordMinWidthPixel / 4);
     const chordToPlaceLeftMargin: number = (chordToPlaceMargin / (div.width) * 100); 
 
     const element = document.createElement("input");
-    element.style.width = `${chordMinWidthPixel}px`;
+    element.style.width = `1.5ch`;
     element.style.height = `50%`;
     element.style.position = "absolute";
     element.style.background = "transparent";
@@ -73,6 +83,7 @@ function Song() {
     element.style.zIndex = "10";
     element.style.border = "none";
     element.style.color = "orange";
+    element.style.fontFamily = "monospace";
     element.style.fontWeight = "bold";
     element.style.fontSize = `${fontSizeRelativeDiv}%`;
 
@@ -119,8 +130,8 @@ function Song() {
       }      
     });
   
-    const adjustWidth = () => {
-      element.style.width = `${Math.max(element.scrollWidth, chordMinWidthPixel) + 1}px`;
+    const adjustWidth = () => {      
+      element.style.width = `${1 + element.value.length}ch`;
     };
   
     element.addEventListener('input', adjustWidth);
@@ -212,9 +223,7 @@ function Song() {
       newChord.push(currentTune);
     }
 
-    const widthValue:number = +currentWidth.split("px")[0];
-    const newWidthValue = `${1.5*newChord.join("").length }ch`;
-    console.log(chord, newChord.join(""), currentWidth, newWidthValue);
+    const newWidthValue = `${1 + newChord.join("").length }ch`;
     return {
       chord: newChord.join(""),
       width: newWidthValue
@@ -258,17 +267,42 @@ function Song() {
             </Link>            
           </div>
         </div>
-        <div className={styles["tune"]}>
-          <button onClick={()=>changeTune("-")}>-</button>
-          <button onClick={()=>changeTune("+")}>+</button>
-        </div>
+        <div className="song-action">
+          <div className={styles["changeColumn"]}
+            style={{
+              position: "absolute",
+              marginLeft: "1rem"
+            }}
+          >          
+            <TbColumns onClick={() => {
+            
+              setIsOneColumn(true);
+            }}
+            style={{
+              border: isOneColumn ? "1px solid black" : "none"
+            }}
+             />
+            <RxColumns onClick={() => {    
+               setIsOneColumn(false);
+            }}
+            style={{
+              border: !isOneColumn ? "1px solid black" : "none"
+            }}
+            />
+          </div>
+          <div className={styles["tune"]}>          
+            <button onClick={()=>changeTune("-")}>-</button>
+            <button onClick={()=>changeTune("+")}>+</button>
+          </div>
+        </div>        
         <div className={styles["lyric"]} id='blocksContainer'>
           {lyricBlocks.map((block, i) => (
             <div className={styles["lyric-block"]} key={`block-${i}`}>
               {block.map((lyric, j) => {     
                 return (
                   <div key={`block-${i}-row-${j}`} id={`block-${i}-row-${j}`} className={styles["lyric-container"]}>
-                    {lyric.text === "" ? (
+                    {lyric.text === "" ?
+                      j !== 0 ? (
                       <div
                         className={styles["lyric-row"]}
                         key={`block-${i}-row-${j}-blank`}
@@ -277,10 +311,12 @@ function Song() {
                           fontSize: `${fontSizeRelativeDiv}%`,
                           display: "flex",
                           flexWrap: "wrap",
-                          gap: "0.5rem",
+                          gap: "0 0.5rem",
                           position: "relative",
+                          width: "100%",
+                          height: "2ch",
                         }}
-                      >                         
+                      >
                         {lyric.chords.map((chord: any, k: any) => (
                           <div
                             key={`block-${i}-row-${j}-chord-${k}`}
@@ -299,6 +335,7 @@ function Song() {
                                 background: "transparent",
                                 border: "none",
                                 color: "orange",
+                                fontFamily: "monospace",
                                 fontWeight: "bold",
                                 fontSize: `${fontSizeRelativeDiv}%`,
                               }}
@@ -321,14 +358,16 @@ function Song() {
                           </div>
                         ))}
                       </div>
-                    ) : (
+                      ) : null
+                    : (
                       <div
                         className={styles["lyric-row"]}
                         style={{
                           display: "flex",
                           flexWrap: "wrap",
-                          gap: "0.5rem",
+                          gap: "0 0.5rem",
                           fontSize: `${fontSizeRelativeDiv}%`,
+                          fontFamily: "monospace",
                           position: "relative",
                         }}
                       >
@@ -348,7 +387,7 @@ function Song() {
                           return (
                             <div
                               key={`block-${i}-row-${j}-word-${wordIndex}`}
-                              style={{ /* word-chord */
+                              style={{ 
                                 display: "flex",
                                 flexDirection: "column",
                                 alignItems: "flex-start",
@@ -358,7 +397,7 @@ function Song() {
                               onClick={(e) => handleClick(e, lyric.id, i, j, wordIndex)}
                             >
                               <span
-                                style={{ /* chord-placeholder */
+                                style={{
                                   height: `${fontSizeRelativeDiv}%`,
                                   width: "100%",
                                   display: "block",
@@ -376,6 +415,7 @@ function Song() {
                                       border: "1px solid transparent",
                                       fontWeight: "bold",
                                       fontSize: `${fontSizeRelativeDiv}%`,
+                                      fontFamily: "monospace",
                                       top: 0,
                                       position: "absolute",
                                     }}
@@ -399,6 +439,7 @@ function Song() {
                               <span
                                 style={{
                                   whiteSpace: "nowrap",
+                                  fontFamily: "monospace",
                                 }}
                               >
                                 {word}
