@@ -7,6 +7,10 @@
   display: flex;
   flex-direction: column;
 }
+[data-theme="dark"] .cifra-container {
+  background-color: #1e1e1e;
+  box-shadow: 0 4px 10px rgba(255, 255, 255, 0.1);
+}
 
 .song-info{
   display: flex;

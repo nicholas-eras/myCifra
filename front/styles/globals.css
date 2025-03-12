@@ -1,18 +1,24 @@
+:root {
+  --bg-color: #242424;
+  --text-color: #000;
+}
+
+[data-theme="dark"] {
+  --bg-color: #121212;
+  --text-color: #fff;
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  transition: background-color 0.3s, color 0.3s;
+}
+
 html,
 body {
   max-width: 100vw;
-  overflow-x: hidden;  
-  background-color: #242424;
+  overflow-x: hidden;
   margin: 0;
   padding: 0;
-}
-html{
-  font-size: 16px;
   font-family: monospace;
 }
-* {
-  box-sizing: border-box;
-  padding: 0;
-  margin: 0;
-}
-

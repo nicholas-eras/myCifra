@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import styles from '../styles/index.module.css';
 import songService from '../service/app.service';
 import Link from 'next/link';
+import ThemeToggle from '../components/ThemeToggle';
 
 function App() {
   const [songList, setSongList] = useState<any[]>([]);
@@ -15,13 +16,13 @@ function App() {
         console.error('Failed to fetch song data:', error);
       }
     };
-
     fetchSong();
   }, []);
 
   return (
     <div className={styles['table-container']}>
       <div className={styles.headingRow}>
+      <ThemeToggle/>
         <h2 className={styles.heading}>Lista de Músicas</h2>
         <Link href={`/song`} className={styles.linkHeading}>
           Criar música
