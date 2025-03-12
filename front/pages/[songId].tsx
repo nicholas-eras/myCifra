@@ -5,6 +5,8 @@ import songService from '../service/app.service';
 import Link from 'next/link';
 import { TbColumns } from "react-icons/tb";
 import { RxColumns } from "react-icons/rx";
+import { MdOutlineTextIncrease } from "react-icons/md";
+import { MdOutlineTextDecrease } from "react-icons/md";
 
 function Song() {
   const router = useRouter();
@@ -16,16 +18,16 @@ function Song() {
 
   const tunes = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
 
-  const fontSize = 16;
-  const fontSizeRelativeDiv = 90;
+  const [fontSize, setFontSize] = useState(16);
+  const fontSizeRelativeDiv = 100;
 
   const numRowsPerColumn = 20;  
-
+  
   const fetchSongData = async(id: number) =>  {      
     const data = await songService.getSongById(id);
     setSong(data);                     
-  }
-    
+  }      
+
   useEffect(() => {    
     if (songId) {
       fetchSongData(+songId);
@@ -277,31 +279,47 @@ function Song() {
           <div className={styles["changeColumn"]}
             style={{
               position: "absolute",
-              marginLeft: "1rem"
+              margin: ".5rem 0 0 1rem",
+              display: "flex",
+              flexDirection: "row",
+              gap: "1rem"
             }}
-          >          
-            <TbColumns onClick={() => {
-            
-              setIsOneColumn(true);
-            }}
-            style={{
-              border: isOneColumn ? "1px solid black" : "none"
-            }}
-             />
-            <RxColumns onClick={() => {    
-               setIsOneColumn(false);
-            }}
-            style={{
-              border: !isOneColumn ? "1px solid black" : "none"
-            }}
-            />
+          >
+            <div className="column-action">
+              <TbColumns onClick={() => {            
+                setIsOneColumn(true);
+              }}
+              style={{
+                border: isOneColumn ? "1px solid black" : "none"
+              }}
+              />
+              <RxColumns onClick={() => {    
+                setIsOneColumn(false);
+              }}
+              style={{
+                border: !isOneColumn ? "1px solid black" : "none"
+              }}            
+              />
+            </div> 
+            <div className="change-font-size-action">
+              <MdOutlineTextIncrease onClick={() => {
+                setFontSize(fontSize + 1);
+                }}/>
+              <MdOutlineTextDecrease onClick={() =>{
+                setFontSize(fontSize - 1);
+              }}/>
+            </div>
           </div>
           <div className={styles["tune"]}>          
             <button onClick={()=>changeTune("-")}>-</button>
             <button onClick={()=>changeTune("+")}>+</button>
           </div>
         </div>        
-        <div className={styles["lyric"]} id='blocksContainer'>
+        <div className={styles["lyric"]} id='blocksContainer'
+          style={{
+            fontSize: `${fontSize}px`
+          }}
+        >
           {lyricBlocks.map((block, i) => (
             <div className={styles["lyric-block"]} key={`block-${i}`}>
               {block.map((lyric, j) => {     
@@ -314,7 +332,7 @@ function Song() {
                         key={`block-${i}-row-${j}-blank`}
                         onClick={(e) => handleClick(e, lyric.id, i, j, 0, 100)}
                         style={{
-                          fontSize: `${fontSizeRelativeDiv}%`,
+                          fontSize: `calc(${fontSizeRelativeDiv} * ${fontSize})%`,
                           display: "flex",
                           flexWrap: "wrap",
                           gap: "0 0.5rem",
@@ -334,7 +352,7 @@ function Song() {
                               fontFamily: "monospace",
                               fontWeight: "bold",
                               position: "absolute",
-                              fontSize: `${fontSizeRelativeDiv}%`,
+                              fontSize: `calc(${fontSizeRelativeDiv} * ${fontSize})%`,
                             }}
                             readOnly
                             onMouseOver={(e) => {                                
@@ -362,7 +380,7 @@ function Song() {
                           display: "flex",
                           flexWrap: "wrap",
                           gap: "0 0.5rem",
-                          fontSize: `${fontSizeRelativeDiv}%`,
+                          height: `calc{2 * ${fontSize})px`,
                           fontFamily: "monospace",
                           position: "relative",
                         }}
@@ -389,13 +407,12 @@ function Song() {
                                 flexDirection: "column",
                                 alignItems: "flex-start",
                                 position: "relative",
-                                gap: "1rem",
                               }}
                               onClick={(e) => handleClick(e, lyric.id, i, j, wordIndex)}
                             >
                               <span
                                 style={{
-                                  height: `${fontSizeRelativeDiv}%`,
+                                  height: `${fontSize}px`,
                                   width: "100%",
                                   display: "block",
                                   position: "relative",
@@ -412,7 +429,7 @@ function Song() {
                                       color: "orange",
                                       border: "1px solid transparent",
                                       fontWeight: "bold",
-                                      fontSize: `${fontSizeRelativeDiv}%`,
+                                      fontSize: `${fontSize}px`,
                                       fontFamily: "monospace",
                                       top: 0,
                                       position: "absolute",
@@ -469,7 +486,7 @@ function Song() {
                         >
                         <span
                           style={{
-                            height: `${fontSizeRelativeDiv}%`,
+                            height: `${fontSize}px`,                            
                             width: "100%",
                             display: "block",
                             position: "relative",
@@ -489,7 +506,7 @@ function Song() {
                                   color: "orange",
                                   border: "1px solid transparent",
                                   fontWeight: "bold",
-                                  fontSize: `${fontSizeRelativeDiv}%`,
+                                  fontSize: `${fontSize}px`,
                                   fontFamily: "monospace",
                                   top: 0,
                                   position: "absolute",
