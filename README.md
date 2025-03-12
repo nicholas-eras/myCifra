@@ -13,4 +13,5 @@ Este é um projeto para exibição e edição interativa de cifras musicais. As 
 
 ![image](https://github.com/user-attachments/assets/df606b79-8866-4798-a18d-bd0d78be6e3b)
 ![image](https://github.com/user-attachments/assets/9f1116cd-b944-46c4-a235-7a1987668b4d)
-![image](https://github.com/user-attachments/assets/5b0bfc65-d6e5-4ea8-b92e-c14bf79c7382)
+![image](https://github.com/user-attachments/assets/3ec56d75-4618-46fb-ba45-7d7b148fcc99)
+
