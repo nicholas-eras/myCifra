@@ -85,7 +85,7 @@ function Song() {
     element.style.height = height ? "100%" : `50%`;
     element.style.position = "absolute";
     element.style.background = "transparent";
-    element.style.marginLeft = `${chordToPlaceLeftMargin}%`;
+    element.style.marginLeft = +wordIndex === -1 ? `${chordToPlaceMargin}px` :`${chordToPlaceLeftMargin}%`;
     element.style.zIndex = "10";
     element.style.border = "none";
     element.style.color = "orange";
@@ -108,7 +108,7 @@ function Song() {
         lyricId: lyricId,
         chord: element.value,
         width: element.style.width,
-        offset: parseFloat(element.style.marginLeft.replace("%", "")) / 100,
+        offset: +wordIndex === -1 ? element.style.marginLeft : parseFloat(element.style.marginLeft.replace("%", "")) / 100,
         position: +wordIndex === -1 ? 0 : +wordIndex
       };
 
@@ -334,7 +334,7 @@ function Song() {
                       <div
                         className={styles["lyric-row"]}
                         key={`block-${i}-row-${j}-blank`}
-                        onClick={(e) => handleClick(e, lyric.id, i, j, 0, 100)}
+                        onClick={(e) => handleClick(e, lyric.id, i, j, -1, 100)}
                         style={{
                           fontSize: `calc(${fontSizeRelativeDiv} * ${fontSize})%`,
                           display: "flex",
@@ -350,7 +350,7 @@ function Song() {
                             key={`block-${i}-row-${j}-${k}`}
                             style={{
                               width: chord.width || "auto",
-                              marginLeft: `${chord.offset * 100}%`,
+                              marginLeft: `${typeof chord.offset === "string" && chord.offset.includes("px") ? chord.offset : chord.offset + "px"}`,
                               background: "transparent",
                               border: "none",
                               color: "orange",

@@ -108,6 +108,9 @@ export class SongService {
             }
           }
         });
+        if (typeof chordInfo.offset == 'string'){
+          chordInfo.offset = parseFloat((chordInfo.offset as string).replace("px", ""));
+        }
         await this.prisma.chord.create({
           data:{
             lyricId: lyric.id,
@@ -151,6 +154,9 @@ export class SongService {
         }
       });   
       lyricChords.chords.forEach(async(chordInfo) => {
+        if (typeof chordInfo.offset == 'string'){
+          chordInfo.offset = parseFloat((chordInfo.offset as string).replace("px", ""));
+        }
         await this.prisma.chord.create({
           data:{
             lyricId: lyric.id,
