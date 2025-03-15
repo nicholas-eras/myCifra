@@ -7,6 +7,7 @@ import { TbColumns } from "react-icons/tb";
 import { RxColumns } from "react-icons/rx";
 import { MdOutlineTextIncrease } from "react-icons/md";
 import { MdOutlineTextDecrease } from "react-icons/md";
+import { FaPen } from "react-icons/fa";
 
 function Song() {
   const router = useRouter();
@@ -286,28 +287,31 @@ function Song() {
             }}
           >
             <div className="column-action">
-              <TbColumns onClick={() => {            
-                setIsOneColumn(true);
-              }}
-              style={{
-                border: isOneColumn ? "1px solid black" : "none"
-              }}
-              />
               <RxColumns onClick={() => {    
-                setIsOneColumn(false);
-              }}
-              style={{
-                border: !isOneColumn ? "1px solid black" : "none"
-              }}            
+                  setIsOneColumn(true);
+                }}
+                style={{
+                  border: isOneColumn ? "1px solid black" : "none"
+                }}            
               />
+              <TbColumns onClick={() => {            
+                  setIsOneColumn(false);
+                }}
+                style={{
+                  border: !isOneColumn ? "1px solid black" : "none"
+                }}
+              />              
             </div> 
             <div className="change-font-size-action">
               <MdOutlineTextIncrease onClick={() => {
                 setFontSize(fontSize + 1);
-                }}/>
+              }}/>
               <MdOutlineTextDecrease onClick={() =>{
                 setFontSize(fontSize - 1);
               }}/>
+              <Link href={`/song/${songId}`}>
+                <FaPen/>
+              </Link>              
             </div>
           </div>
           <div className={styles["tune"]}>          
@@ -343,6 +347,7 @@ function Song() {
                       >
                         {lyric.chords.map((chord: any, k: any) => (                       
                           <input
+                            key={`block-${i}-row-${j}-${k}`}
                             style={{
                               width: chord.width || "auto",
                               marginLeft: `${chord.offset * 100}%`,
@@ -352,7 +357,7 @@ function Song() {
                               fontFamily: "monospace",
                               fontWeight: "bold",
                               position: "absolute",
-                              fontSize: `calc(${fontSizeRelativeDiv} * ${fontSize})%`,
+                              fontSize: `${fontSize}px`,
                             }}
                             readOnly
                             onMouseOver={(e) => {                                

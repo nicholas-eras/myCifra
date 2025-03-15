@@ -3,6 +3,7 @@ import styles from '../styles/index.module.css';
 import songService from '../service/app.service';
 import Link from 'next/link';
 import ThemeToggle from '../components/ThemeToggle';
+import { FaPen } from "react-icons/fa";
 
 function App() {
   const [songList, setSongList] = useState<any[]>([]);
@@ -30,9 +31,10 @@ function App() {
       </div>      
       <table className={styles.table}>
         <thead>
-          <tr className={styles.tr}>
+          <tr className={styles.tr} style={{width: "100%"}}>
             <th className={styles.th}>Artista</th>
             <th className={styles.th}>Nome</th>
+            <th className={styles.th} style={{width: "15%", textAlign: "center"}}>Editar Letra</th>
           </tr>
         </thead>
         <tbody className={styles.tb}>
@@ -49,11 +51,15 @@ function App() {
                     {song.name}
                   </Link>
                 </td>
+                <td style={{ textAlign: "center" }}>
+                  <Link href={`/song/${song.id}`}>
+                    <FaPen/>
+                  </Link>   
+                </td>
               </tr>
             ))
           ) : (
-            <tr className={styles.tr}>
-            </tr>
+            <tr className={styles.tr}/>            
           )}
         </tbody>
       </table>

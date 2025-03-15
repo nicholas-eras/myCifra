@@ -23,6 +23,28 @@ const songService = {
     }
   },
 
+  async updateSong(id: number, payload: any): Promise<any> {
+    try {
+      const response = await fetch(`${API_URL}/song/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create song');
+      }
+
+      const data: any = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error creating song:', error);
+      throw error;
+    }
+  },
+
   async getAllSong(): Promise<any[]> {
     try {
       const response = await fetch(`${API_URL}/song`);
