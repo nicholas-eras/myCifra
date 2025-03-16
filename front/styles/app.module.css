@@ -67,7 +67,6 @@
 }
 
 .lyric-block{
-  /* border: 1px solid gray; */
   display: flex;
   flex-direction: column;
   overflow-x: auto;

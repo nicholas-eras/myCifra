@@ -325,7 +325,11 @@ function Song() {
           }}
         >
           {lyricBlocks.map((block, i) => (
-            <div className={styles["lyric-block"]} key={`block-${i}`}>
+            <div className={styles["lyric-block"]} key={`block-${i}`} 
+              style={{
+                border: isOneColumn ? "none" : "1px solid black"
+              }}
+            >
               {block.map((lyric, j) => {     
                 return (
                   <div key={`block-${i}-row-${j}`} id={`block-${i}-row-${j}`} className={styles["lyric-container"]}>
@@ -344,7 +348,7 @@ function Song() {
                           width: "100%",
                           height: "2ch",
                         }}
-                      >
+                      >                         
                         {lyric.chords.map((chord: any, k: any) => (                       
                           <input
                             key={`block-${i}-row-${j}-${k}`}
@@ -376,7 +380,16 @@ function Song() {
                           />
                         ))}
                       </div>
-                      ) : null
+                      ) : (
+                        <div
+                          className="counter"
+                          style={{
+                            position: "absolute",                              
+                          }}
+                        >
+                          {isOneColumn ? "" : i + 1}
+                        </div>
+                      )
                     : (
                       <div
                         className={styles["lyric-row"]}
@@ -394,8 +407,7 @@ function Song() {
                           <div
                             className="counter"
                             style={{
-                              position: "absolute",
-                              marginLeft: "-1rem",
+                              position: "absolute",                              
                             }}
                           >
                             {i + 1}
