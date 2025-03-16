@@ -410,7 +410,7 @@ function Song() {
                               position: "absolute",                              
                             }}
                           >
-                            {i + 1}
+                          {isOneColumn ? "" : i + 1}
                           </div>
                         )}
                         {lyric.text.split(" ").map((word: any, wordIndex: any) => {
