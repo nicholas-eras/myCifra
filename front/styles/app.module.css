@@ -43,6 +43,28 @@
   gap: 1rem;
 }
 
+.song-action{
+  display: flex;
+}
+
+@media screen and (max-width: 600px){
+  .song-action{
+    display: flex;
+    flex-direction: row;    
+  }
+
+  .changeColumn{
+    position: relative !important
+  }
+
+  .tune{
+    display: flex;
+
+    justify-content: center;
+    gap: 1rem;
+  }
+}
+
 .tune button {
   padding: 0.25rem .75rem;
   font-size: 1rem;

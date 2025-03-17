@@ -281,7 +281,7 @@ function Song() {
             </Link>            
           </div>
         </div>
-        <div className="song-action">
+        <div className={styles["song-action"]}>
           <div className={styles["changeColumn"]}
             style={{
               position: "absolute",
