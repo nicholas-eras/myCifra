@@ -7,21 +7,29 @@ import songService from '../service/app.service';
 interface SongFormProps {
   songId?: string;
 }
+interface LyricLine {
+  id: number;
+  lineIndex: number;
+  text: string;
+  chords?: string[];
+}
 
 function SongForm({ songId }: SongFormProps) {
   const router = useRouter();
   const [artist, setArtist] = useState<string>('');
   const [name, setName] = useState<string>('');
-  const [lyrics, setLyrics] = useState<string>('');
+  const [lyrics, setLyrics] = useState<LyricLine[]>([]);
+  const [oldSong, setSong] = useState();
 
   useEffect(() => {
     if (songId) {
       (async () => {
         try {
           const song = await songService.getSongById(+songId);
+          setSong(song);
           setArtist(song.artist);
           setName(song.name);
-          setLyrics(song.lyrics.map((line: any) => line.text).join('\n'));
+          setLyrics(song.lyrics);
         } catch (error) {
           console.error('Erro ao buscar música:', error);
           alert('Erro ao carregar a música.');
@@ -31,15 +39,18 @@ function SongForm({ songId }: SongFormProps) {
   }, [songId]);
 
   const handleClick = async () => {
-    const lyricArray = lyrics.split('\n');
     const song = {
       artist,
       name,
-      lyrics: lyricArray.map((lyric, i) => ({
-        lineIndex: i,
-        text: lyric,
-        chords: [],
-      })),
+      lyrics: lyrics.map((lyric, i) => {
+        return {
+          id: lyric.id ?? i,
+          lineIndex: lyric.lineIndex ?? i,
+          text: lyric.text,
+          chords: lyric.chords ?? [],
+        };
+      })
+
     };
 
     try {
@@ -50,7 +61,7 @@ function SongForm({ songId }: SongFormProps) {
         await songService.createSong(song);
         alert('Letra criada com sucesso!');
       }
-      router.push('/');
+      // router.push('/');
     } catch (error) {
       console.error('Erro ao salvar Letra:', error);
       alert('Erro ao salvar Letra');
@@ -90,8 +101,35 @@ function SongForm({ songId }: SongFormProps) {
         <textarea
           className={styles.textArea}
           id="textArea"
-          value={lyrics}
-          onChange={(e) => setLyrics(e.target.value)}
+          value={lyrics.map(lyric => lyric.text).join("\n")}
+          onChange={(e) => {
+            const newLines = e.target.value.split('\n');
+
+            setLyrics((prevLyrics) => {
+              const usedIndexes = new Set<number>();
+
+              return newLines.map((line, i) => {
+                // Tenta encontrar uma linha com mesmo texto, ainda não usada
+                const matched = prevLyrics.find((l, idx) => l.text === line && !usedIndexes.has(idx));
+                
+                if (matched) {
+                  usedIndexes.add(prevLyrics.indexOf(matched));
+                  return {
+                    ...matched,
+                    lineIndex: i,
+                  };
+                }
+
+                // Se não achou, cria nova
+                return {
+                  id: Date.now() + i, // evita colisão de id
+                  lineIndex: i,
+                  text: line,
+                  chords: [],
+                };
+              });
+            });
+          }}
         />
         <div className={styles.headingRow}>
           <button className={styles.heading} onClick={handleClick}>

@@ -1,10 +1,12 @@
 // song.service.ts
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateSongDto, UpdateSongDto } from './dto/song.dto';
 
 @Injectable()
 export class SongService {
+  private readonly logger = new Logger(SongService.name);
+
   constructor(private prisma: PrismaService) {}
 
   async create(createSongDto: CreateSongDto) {
@@ -77,52 +79,131 @@ export class SongService {
       }
     })
   }
+private async createLyrics(newSongDto: UpdateSongDto, songId: number) {
+  if (!newSongDto.lyrics) { return }
+  
+  // 1. Contar quantos acordes esperamos
+  const totalExpected = newSongDto.lyrics.reduce((sum, lyric) => sum + lyric.chords.length, 0);
+  console.log(`🎯 Esperamos salvar ${totalExpected} acordes`);
+  
+  // 2. Salvar lista dos acordes que vamos tentar criar
+  const expectedChords: string[] = [];
+  newSongDto.lyrics.forEach((lyric, i) => {
+    lyric.chords.forEach(chord => {
+      expectedChords.push(`Linha${i}-${chord.chord}@${chord.position}`);
+    });
+  });
+  console.log('📝 Acordes esperados:', expectedChords);
 
-  private async createLyrics(newSongDto: UpdateSongDto, songId:number){
-    if (!newSongDto.lyrics){ return };    
+  // 3. Deletar acordes existentes
+  const deletedCount = await this.prisma.chord.deleteMany({
+    where: {
+      lyric: { songId: songId }
+    }
+  });
+  console.log(`🗑️ Acordes deletados: ${deletedCount.count}`);
 
-    newSongDto.lyrics.forEach(async(lyricChords, i) => {
-      const lyric = await this.prisma.lyric.upsert({
-        where:{
-          songId_lineIndex: {
-            songId: songId,
-            lineIndex: i,
-          },
-        },
-        create:{
-          lineIndex:i,
-          text:lyricChords.text,
-          songId:songId
-        },
-        update:{
-          lineIndex:i,
-          text:lyricChords.text,
-          songId:songId
-        }
+  // 4. Processar cada linha
+  for (let i = 0; i < newSongDto.lyrics.length; i++) {
+    const lyricChords = newSongDto.lyrics[i];
+    
+    console.log(`📝 Processando linha ${i}: "${lyricChords.text}" com ${lyricChords.chords.length} acordes`);
+    
+    const lyric = await this.prisma.lyric.upsert({
+      where: {
+        songId_lineIndex: { songId: songId, lineIndex: i }
+      },
+      create: {
+        lineIndex: i,
+        text: lyricChords.text,
+        songId: songId
+      },
+      update: {
+        lineIndex: i,
+        text: lyricChords.text,
+        songId: songId
+      }
+    });
+    
+    console.log(`✅ Lyric criada/atualizada com ID: ${lyric.id}`);
+
+    // 5. Processar acordes desta linha
+    for (let j = 0; j < lyricChords.chords.length; j++) {
+      const chordInfo = lyricChords.chords[j];
+      
+      console.log(`🎸 Tentando criar acorde ${j + 1}/${lyricChords.chords.length}:`, {
+        chord: chordInfo.chord,
+        position: chordInfo.position,
+        offset: chordInfo.offset,
+        width: chordInfo.width
       });
-      lyricChords.chords.forEach(async(chordInfo) => {
-        await this.prisma.chord.deleteMany({
-          where:{
-            lyric: {
-              songId: songId
-            }
-          }
-        });
-        if (typeof chordInfo.offset == 'string'){
-          chordInfo.offset = parseFloat((chordInfo.offset as string).replace("px", ""));
-        }
-        await this.prisma.chord.create({
-          data:{
+      
+      // Converter offset se necessário
+      let processedOffset = chordInfo.offset;
+      if (typeof chordInfo.offset === 'string') {
+        processedOffset = parseFloat((chordInfo.offset as string).replace("px", ""));
+        console.log(`🔄 Offset convertido: "${chordInfo.offset}" → ${processedOffset}`);
+      }
+      
+      try {
+        const createdChord = await this.prisma.chord.create({
+          data: {
             lyricId: lyric.id,
             chord: chordInfo.chord,
             position: chordInfo.position,
-            offset: chordInfo.offset,
+            offset: processedOffset,
             width: chordInfo.width
           }
         });
-      });
-    });
+        
+        console.log(`✅ Acorde criado com sucesso:`, {
+          id: createdChord.id,
+          chord: createdChord.chord,
+          position: createdChord.position,
+          lyricId: createdChord.lyricId
+        });
+        
+      } catch (error) {
+        console.error(`❌ ERRO ao criar acorde "${chordInfo.chord}":`, error);
+        console.error('❌ Dados que causaram erro:', {
+          lyricId: lyric.id,
+          chord: chordInfo.chord,
+          position: chordInfo.position,
+          offset: processedOffset,
+          width: chordInfo.width
+        });
+        // Continue processando os outros acordes mesmo se um der erro
+      }
+    }
   }
+
+  // 6. Verificação final - ver quais foram realmente salvos
+  const savedChords = await this.prisma.chord.findMany({
+    where: { lyric: { songId } },
+    include: { lyric: { select: { lineIndex: true } } },
+    orderBy: [
+      { lyric: { lineIndex: 'asc' } },
+      { position: 'asc' }
+    ]
+  });
+  
+  const actualChords = savedChords.map(c => 
+    `Linha${c.lyric.lineIndex}-${c.chord}@${c.position}`
+  );
+  console.log('💾 Acordes realmente salvos:', actualChords);
+  
+  // 7. Comparar e mostrar quais sumiram
+  const missing = expectedChords.filter(expected => !actualChords.includes(expected));
+  if (missing.length > 0) {
+    console.error(`❌ ${missing.length} acordes sumiram:`, missing);
+  } else {
+    console.log('✅ Todos os acordes foram salvos com sucesso!');
+  }
+  
+  console.log(`📊 RESUMO: Esperados: ${totalExpected}, Salvos: ${savedChords.length}, Perdidos: ${missing.length}`);
+}
+
+
 
   private async updateLyrics(newSongDto: UpdateSongDto, songId:number){
     if (!newSongDto.lyrics){ return };    
