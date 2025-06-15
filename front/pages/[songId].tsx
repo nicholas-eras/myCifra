@@ -10,6 +10,7 @@ import { MdOutlineTextDecrease } from "react-icons/md";
 import { FaPen } from "react-icons/fa";
 import { IoMusicalNotesOutline } from "react-icons/io5";
 import { IoMusicalNotes } from "react-icons/io5";
+import { HiHashtag } from "react-icons/hi2";
 
 function Song() {
   const router = useRouter();
@@ -20,6 +21,7 @@ function Song() {
   const [isOneColumn, setIsOneColumn] = useState(true);
   const [isLyricOnly, setIsLyricOnly] = useState(false);
   const [chordsPreferences, setChordsPreferences] = useState<Record<number, "#" | "b">>({});
+  const [generalPreference, setGeneralPreference] = useState<string>("");
 
   const tunes = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
   const tunesBemol = ["C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B"];
@@ -61,6 +63,86 @@ function Song() {
       lyric.style.gridTemplateColumns = "repeat(2, 1fr)";  
     }    
   }, [isOneColumn])
+
+  useEffect(() => {
+  setGeneralPreference("");
+
+  setSong((prevSong: { lyrics: any[]; }) => {
+    if (!prevSong || !prevSong.lyrics) return prevSong; // impede erro
+
+    return {
+      ...prevSong,
+      lyrics: prevSong.lyrics.map((lyric: { chords: any[]; }) => ({
+        ...lyric,
+        chords: lyric.chords.map((chordInfo: { id: any; chord: string; }) => {
+          const chordId = chordInfo.id;
+          let preference: "#" | "b";
+
+          if (chordsPreferences[chordId]) {
+            preference = chordsPreferences[chordId];
+          } else if (chordInfo.chord.includes("#")) {
+            preference = "#";
+          } else if (chordInfo.chord.includes("b")) {
+            preference = "b";
+          } else {
+            preference = "#";
+          }
+
+          const restoredChord = convertChordToPreference(chordInfo.chord, preference);
+
+          return {
+            ...chordInfo,
+            chord: restoredChord,
+            width: `${1 + restoredChord.length}ch`
+          };
+        })
+      }))
+    };
+  });
+}, [isLyricOnly]);
+
+
+
+  function convertChordToPreference(chordStr: string, targetPreference: string): string {
+    const mapBemolToSustenido: Record<string, string> = {
+      "Bb": "A#",
+      "Db": "C#",
+      "Eb": "D#",
+      "Gb": "F#",
+      "Ab": "G#"
+    };
+
+    const mapSustenidoToBemol: Record<string, string> = {
+      "A#": "Bb",
+      "C#": "Db",
+      "D#": "Eb",
+      "F#": "Gb",
+      "G#": "Ab"
+    };
+
+    if (targetPreference === "#") {
+      return chordStr.replace(/(Bb|Db|Eb|Gb|Ab)/g, (match) => mapBemolToSustenido[match] || match);
+    } else {
+      return chordStr.replace(/(A#|C#|D#|F#|G#)/g, (match) => mapSustenidoToBemol[match] || match);
+    }
+  }
+
+  useEffect(() => {
+    if (generalPreference === "") return; // se ainda não tiver preferência, não faz nada
+
+    setSong((prevSong: { lyrics: any[]; }) => ({
+      ...prevSong,
+      lyrics: prevSong.lyrics.map((lyric: { chords: any[]; }) => ({
+        ...lyric,
+        chords: lyric.chords.map((chordInfo: { chord: any; }) => ({
+          ...chordInfo,
+          chord: convertChordToPreference(chordInfo.chord, generalPreference)
+          // largura pode ser recalculada se necessário:
+          , width: `${1 + convertChordToPreference(chordInfo.chord, generalPreference).length}ch`
+        }))
+      }))
+    }));
+  }, [generalPreference]);
 
   if (!song) {
     return <div>Loading...</div>;
@@ -202,82 +284,121 @@ function Song() {
     }));
   };  
 
-      const changeChord = (
-        chordId: number,
-        chord: string,
-        increment: string,
-        currentWidth: string
-      ) => {
-        let chordCopy = chord;
-        let newChord: string[] = [];
-        let currentTune: string;
+  const changeChord = (
+    chordId: number,
+    chord: string,
+    increment: string,
+    currentWidth: string
+  ) => {
+    let chordCopy = chord;
+    let newChord: string[] = [];
+    let currentTune: string;
 
-        // 1️⃣ Pega a preferência do estado
-        let preference: "#" | "b" | null = chordsPreferences[chordId] ?? null;
+    // 1️⃣ Usa generalPreference direto do state (acessível aqui)
+    // (ex: const [generalPreference, setGeneralPreference] = useState("");)
 
-        // 2️⃣ Se não tiver, tenta detectar
-        if (!preference) {
-          if (chord.includes("#")) {
-            preference = "#";
-          } else if (chord.includes("b")) {
-            preference = "b";
-          } else {
-            preference = "#";
-          }
+    let preference: "#" | "b";
 
-          // Salva a preferência
-          setChordsPreferences(prev => ({
-            ...prev,
-            [chordId]: preference!
-          }));
+    if (generalPreference === "#" || generalPreference === "b") {
+      preference = generalPreference;
+
+      // Converte toda cifra para a preferência geral
+      chordCopy = convertChordToPreference(chord, preference);
+
+    } else {
+      // Lógica original de preferência individual
+
+      preference = chordsPreferences[chordId] ?? null;
+
+      if (!preference) {
+        if (chord.includes("#")) {
+          preference = "#";
+        } else if (chord.includes("b")) {
+          preference = "b";
+        } else {
+          preference = "#";
         }
 
-        const scale = preference === "#" ? tunes : tunesBemol;
+        setChordsPreferences(prev => ({
+          ...prev,
+          [chordId]: preference!
+        }));
+      }
+    }
 
-        for (let i = 0; i < chordCopy.length; i++) {
-          currentTune = chordCopy[i];
+    const scale = preference === "#" ? tunes : tunesBemol;
 
-          if (!tunes.includes(currentTune) && (currentTune === "#" || currentTune === "b")) {
-            continue;
-          }
-
-          if (currentTune === "#" && newChord[i - 1] === "E") {
-            newChord[i - 1] = "F";
-            currentTune = "";
-          }
-
-          if (currentTune === "b" && newChord[i - 1] === "F") {
-            newChord[i - 1] = "E";
-            currentTune = "";
-          }
-
-          if (chordCopy[i + 1] === "#" || chordCopy[i + 1] === "b") {
-            currentTune = chordCopy.substring(i, i + 2);
-          }
-
-          let currentTuneIndex = scale.indexOf(currentTune);
-
-          if (currentTuneIndex === -1) {
-            newChord.push(currentTune);
-            continue;
-          }
-
-          currentTuneIndex = increment === "+"
-            ? (currentTuneIndex + 1) % scale.length
-            : (currentTuneIndex - 1 + scale.length) % scale.length;
-
-          currentTune = scale[currentTuneIndex];
-          newChord.push(currentTune);
-        }
-
-        const newWidthValue = `${1 + newChord.join("").length}ch`;
-        return {
-          chord: newChord.join(""),
-          width: newWidthValue
-        };
+    function convertChordToPreference(chordStr: string, targetPreference: "#" | "b"): string {
+      const mapBemolToSustenido: Record<string, string> = {
+        "Bb": "A#",
+        "Db": "C#",
+        "Eb": "D#",
+        "Gb": "F#",
+        "Ab": "G#"
       };
 
+      const mapSustenidoToBemol: Record<string, string> = {
+        "A#": "Bb",
+        "C#": "Db",
+        "D#": "Eb",
+        "F#": "Gb",
+        "G#": "Ab"
+      };
 
+      if (targetPreference === "#") {
+        return chordStr.replace(/(Bb|Db|Eb|Gb|Ab)/g, (match) => {
+          return mapBemolToSustenido[match] || match;
+        });
+      } else {
+        return chordStr.replace(/(A#|C#|D#|F#|G#)/g, (match) => {
+          return mapSustenidoToBemol[match] || match;
+        });
+      }
+    }
+
+    for (let i = 0; i < chordCopy.length; i++) {
+      currentTune = chordCopy[i];
+
+      if (!tunes.includes(currentTune) && (currentTune === "#" || currentTune === "b")) {
+        continue;
+      }
+
+      if (currentTune === "#" && newChord[i - 1] === "E") {
+        newChord[i - 1] = "F";
+        currentTune = "";
+      }
+
+      if (currentTune === "b" && newChord[i - 1] === "F") {
+        newChord[i - 1] = "E";
+        currentTune = "";
+      }
+
+      if (chordCopy[i + 1] === "#" || chordCopy[i + 1] === "b") {
+        currentTune = chordCopy.substring(i, i + 2);
+        i++; // pular próximo porque já usou
+      }
+
+      let currentTuneIndex = scale.indexOf(currentTune);
+
+      if (currentTuneIndex === -1) {
+        newChord.push(currentTune);
+        continue;
+      }
+
+      currentTuneIndex = increment === "+"
+        ? (currentTuneIndex + 1) % scale.length
+        : (currentTuneIndex - 1 + scale.length) % scale.length;
+
+      currentTune = scale[currentTuneIndex];
+      newChord.push(currentTune);
+    }
+
+    const newWidthValue = `${1 + newChord.join("").length}ch`;
+    return {
+      chord: newChord.join(""),
+      width: newWidthValue
+    };
+  };
 
   return (
     <>
@@ -323,7 +444,8 @@ function Song() {
               margin: ".5rem 0 0 1rem",
               display: "flex",
               flexDirection: "row",
-              gap: "1rem"
+              gap: "1rem",
+              alignItems: "baseline"
             }}
           >
             <div className="column-action">
@@ -352,7 +474,13 @@ function Song() {
               {isLyricOnly ?
                 <IoMusicalNotesOutline onClick={()=> setIsLyricOnly(false)}/> : 
                 <IoMusicalNotes onClick={()=> setIsLyricOnly(true)}/>           
-              }  
+              } 
+              <HiHashtag style={{marginLeft: '8px', marginRight: '4px', border: `${generalPreference == "#" ? 1 : 0}px solid black`}} onClick={() => {
+                setGeneralPreference("#");
+              }} />
+              <span style={{ fontSize: "1.5rem", border: `${generalPreference == "b" ? 1 : 0}px solid black`}} onClick={() => {
+                setGeneralPreference("b");
+              }}>♭</span>
             </div>
             <div className="change-font-size-action">              
               <Link href={`/song/${songId}`}>
