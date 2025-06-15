@@ -4,7 +4,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url      = "postgresql://postgres:postgres2024@localhost:5433/mycifras"
 }
 
 model Song {
@@ -13,6 +13,8 @@ model Song {
   name   String
 
   lyrics Lyric[]
+
+  SongText SongText[]
 }
 
 model Lyric {
@@ -35,4 +37,12 @@ model Chord {
   width      String
   
   lyric Lyric @relation(fields: [lyricId], references: [id], onDelete: Cascade)
+}
+
+model SongText {
+  id         Int   @id @default(autoincrement())
+  songId     Int
+  createdAt  DateTime @default(now())
+  lyrics       Json
+  song      Song     @relation(fields: [songId], references: [id], onDelete: Cascade)
 }

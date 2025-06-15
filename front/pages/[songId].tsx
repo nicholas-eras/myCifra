@@ -19,8 +19,10 @@ function Song() {
   const [tempChordsCounter, setTempChordsCounter] = useState<number>(0);
   const [isOneColumn, setIsOneColumn] = useState(true);
   const [isLyricOnly, setIsLyricOnly] = useState(false);
+  const [chordsPreferences, setChordsPreferences] = useState<Record<number, "#" | "b">>({});
 
   const tunes = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+  const tunesBemol = ["C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B"];
 
   const [fontSize, setFontSize] = useState(16);
   const fontSizeRelativeDiv = 100;
@@ -175,7 +177,7 @@ function Song() {
     };
 
     try {
-      await songService.updateSongChords(song.id, payload);  
+      await songService.updateSongChords(song.songId, payload);  
       alert('Música atualizada com sucesso!');
     } catch (error) {
       console.error('Erro ao atualizar música:', error);
@@ -189,7 +191,7 @@ function Song() {
       lyrics: prevSong.lyrics?.map((lyric) => ({
         ...lyric,
         chords: lyric.chords.map((chordInfo: any) => {
-          const { chord: newChord, width: newWidth } = changeChord(chordInfo.chord, increment, chordInfo.width);
+          const { chord: newChord, width: newWidth } = changeChord(chordInfo.id, chordInfo.chord, increment, chordInfo.width);
           return {
             ...chordInfo,
             chord: newChord,
@@ -200,49 +202,82 @@ function Song() {
     }));
   };  
 
-  const changeChord = (chord: string, increment: string, currentWidth: string) => {   
-    let chordCopy = chord;
-    let newChord = [];
-    let currentTune;    
-    for (let i = 0; i < chordCopy.length; i++){      
-      currentTune = chordCopy[i];
-      if (!tunes.includes(currentTune) && (chordCopy[i] === "#" || chordCopy[i] === "b")){
-        continue;
-      }    
-      if (currentTune == "#" && newChord[i-1] == "E"){
-        newChord[i-1] = "F";
-        currentTune = "";
-      }
-      if (currentTune == "b" && newChord[i-1] == "F"){
-        newChord[i-1] = "E";
-        currentTune = "";
-      }     
-      if (chordCopy[i+1] == "#" || chordCopy[i+1] == "b"){
-        currentTune = chordCopy.substring(i, i+2);        
-      }        
-      let currentTuneIndex = tunes.indexOf(currentTune);    
-      if (increment === "+"){
-        while (currentTuneIndex >= tunes.length - 1){      
-          currentTuneIndex -= tunes.length;
-        }  
-      }
-      else{
-        while (currentTuneIndex <= 0){
-          currentTuneIndex += tunes.length;
-        }
-      }        
-      currentTune = tunes.includes(currentTune) ?
-        tunes[increment === "+" ? currentTuneIndex + 1 : currentTuneIndex - 1]
-        : currentTune;    
-      newChord.push(currentTune);
-    }
+      const changeChord = (
+        chordId: number,
+        chord: string,
+        increment: string,
+        currentWidth: string
+      ) => {
+        let chordCopy = chord;
+        let newChord: string[] = [];
+        let currentTune: string;
 
-    const newWidthValue = `${1 + newChord.join("").length }ch`;
-    return {
-      chord: newChord.join(""),
-      width: newWidthValue
-    };
-  }
+        // 1️⃣ Pega a preferência do estado
+        let preference: "#" | "b" | null = chordsPreferences[chordId] ?? null;
+
+        // 2️⃣ Se não tiver, tenta detectar
+        if (!preference) {
+          if (chord.includes("#")) {
+            preference = "#";
+          } else if (chord.includes("b")) {
+            preference = "b";
+          } else {
+            preference = "#";
+          }
+
+          // Salva a preferência
+          setChordsPreferences(prev => ({
+            ...prev,
+            [chordId]: preference!
+          }));
+        }
+
+        const scale = preference === "#" ? tunes : tunesBemol;
+
+        for (let i = 0; i < chordCopy.length; i++) {
+          currentTune = chordCopy[i];
+
+          if (!tunes.includes(currentTune) && (currentTune === "#" || currentTune === "b")) {
+            continue;
+          }
+
+          if (currentTune === "#" && newChord[i - 1] === "E") {
+            newChord[i - 1] = "F";
+            currentTune = "";
+          }
+
+          if (currentTune === "b" && newChord[i - 1] === "F") {
+            newChord[i - 1] = "E";
+            currentTune = "";
+          }
+
+          if (chordCopy[i + 1] === "#" || chordCopy[i + 1] === "b") {
+            currentTune = chordCopy.substring(i, i + 2);
+          }
+
+          let currentTuneIndex = scale.indexOf(currentTune);
+
+          if (currentTuneIndex === -1) {
+            newChord.push(currentTune);
+            continue;
+          }
+
+          currentTuneIndex = increment === "+"
+            ? (currentTuneIndex + 1) % scale.length
+            : (currentTuneIndex - 1 + scale.length) % scale.length;
+
+          currentTune = scale[currentTuneIndex];
+          newChord.push(currentTune);
+        }
+
+        const newWidthValue = `${1 + newChord.join("").length}ch`;
+        return {
+          chord: newChord.join(""),
+          width: newWidthValue
+        };
+      };
+
+
 
   return (
     <>
