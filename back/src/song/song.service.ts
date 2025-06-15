@@ -37,11 +37,16 @@ export class SongService {
 
   async findAll() {    
     const song = await this.prisma.song.findMany({
-      orderBy:{
+      where: {
+        id: {
+          gte: 13
+        }
+      },
+      orderBy: {
         name: "asc"
       }
     });
-    return song; 
+    return song;
   }
 
   async findOne(id: number) {    
@@ -113,7 +118,7 @@ export class SongService {
       }
     })
   }
-  
+
   private async createLyrics(newSongDto: UpdateSongDto, songId: number) {
     if (!newSongDto.lyrics) { return }
     
