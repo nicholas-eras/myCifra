@@ -1,9 +1,16 @@
 import React, { useState } from 'react'
 import { findGuitarChord } from "chord-fingering";
 
+const converter_acordes = (texto: string) => {
+  return texto.replace(/([A-G][#b]?)(7M)/g, '$1maj7').replaceAll("º", "°");
+}
 
-const ChordDiagram = ({ chordName } : {chordName : string}) => {
-  const result = findGuitarChord(chordName);
+const ChordDiagram = ({ chordName } : {chordName : string}) => {  
+  const result = findGuitarChord(converter_acordes(chordName));
+  if (!result){
+    return <></>
+  }
+  
   const [chordIndex, setChordIndex] = useState<number>(0);
 
   const swapChord = (increment: number) => {
@@ -54,7 +61,7 @@ const ChordDiagram = ({ chordName } : {chordName : string}) => {
     y1: squareHeight,
     y2: 100
   }));
-
+  
   const horizontalLines = Array(numHorizontalLines).fill({}).map((obj, i) => ({
     y1 : (i+1)*squareWidth + lineWidth*i,
     y2: (i+1)*squareWidth + lineWidth*i,
@@ -87,12 +94,13 @@ const ChordDiagram = ({ chordName } : {chordName : string}) => {
         </text>
       </svg>
 
-      <svg width={svgSize} height={svgSize} viewBox="0 0 100 100">
+      <svg width={1.25*svgSize} height={svgSize} viewBox="0 0 100 100">
           <polygon points="0,0 0,100 100,100, 100,0" fill={"white"}></polygon>
           
           {verticalLines.map((square, i) => (
             <line x1={square.x1} y1={square.y1} x2={square.x2} y2={square.y2} stroke='black' strokeWidth={lineWidth/2} key={`vertical-${i}`}/>
           ))}
+          <line x1={verticalLines[verticalLines.length - 1].x1 + squareHeight} y1={verticalLines[verticalLines.length - 1].y1} x2={verticalLines[verticalLines.length - 1].x2 + squareHeight} y2={verticalLines[verticalLines.length - 1].y2} stroke='black' strokeWidth={lineWidth/2} key={`vertical-last`}/>
 
           {horizontalLines.map((square, i) => {
             if (i === 0 ){
@@ -108,7 +116,7 @@ const ChordDiagram = ({ chordName } : {chordName : string}) => {
             if (circle.yIndex < 0){
               circle.yIndex = 0;
             }
-            const cx = circle.xIndex*squareWidth + circle.xIndex * lineWidth + squareWidth / 2 - lineWidth / 2;
+            const cx = circle.xIndex*squareWidth + circle.xIndex * lineWidth + squareWidth  - lineWidth / 2;
             const cy = circle.yIndex*squareHeight + circle.yIndex * lineWidth + squareHeight / 2 - lineWidth / 2;
             return (              
               <circle
