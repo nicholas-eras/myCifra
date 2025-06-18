@@ -1,22 +1,75 @@
 import React from 'react'
 
-const ChordDiagram = ({ chordName }) => {
+const ChordDiagram = ({ chordName } : {chordName : string}) => {
+  const maxWidthRel = 100;
+  const maxHeightRel = 100;
+  const numVerticalLines = 5;
+  const numHorizontalLines = 5;
+  const numVerticalSquares = numVerticalLines + 1;
+  const numHorizontalSquares = numHorizontalLines + 1;
+  const lineWidth = 2;
+  const squareWidth = (maxWidthRel - numHorizontalLines*lineWidth) / numHorizontalSquares;
+  const squareHeight = (maxHeightRel - numVerticalLines*lineWidth) / numVerticalSquares;
+  const circleRadius = 5;
+  const verticalLines = Array(numVerticalLines).fill({}).map((obj, i) => ({
+    x1 : (i+1)*squareHeight + lineWidth*i,
+    x2: (i+1)*squareHeight + lineWidth*i,
+    y1: 0,
+    y2: 100
+  }));
+
+  const horizontalLines = Array(numHorizontalLines).fill({}).map((obj, i) => ({
+    y1 : (i+1)*squareWidth + lineWidth*i,
+    y2: (i+1)*squareWidth + lineWidth*i,
+    x1: 0,
+    x2: 100
+  }));
+
+  const circles = [
+    {
+      xIndex: 1,
+      yIndex: 2,
+      r: circleRadius
+    },
+    {
+      xIndex: 2,
+      yIndex: 1,
+      r: circleRadius
+    },
+    {
+      xIndex: 4,
+      yIndex: 0,
+      r: circleRadius
+    },
+  ];
+
+  console.log(chordName);
   return (
     <svg width={250} height={250} viewBox="0 0 100 100">
         <polygon points="0,0 0,100 100,100, 100,0" fill={"white"}></polygon>
-        <line x1={15} y1={0} x2={15} y2={100} stroke='black' strokeWidth={2}></line>
-        <line x1={30 + 2} y1={0} x2={30 + 2} y2={100} stroke='black' strokeWidth={2}></line>
-        <line x1={45 + 4} y1={0} x2={45 + 4} y2={100} stroke='black' strokeWidth={2}></line>
-        <line x1={60 + 6} y1={0} x2={60 + 6} y2={100} stroke='black' strokeWidth={2}></line>
-        <line x1={75 + 8} y1={0} x2={75 + 8} y2={100} stroke='black' strokeWidth={2}></line>
+        
+        {verticalLines.map((square, i) => (
+          <line x1={square.x1} y1={square.y1} x2={square.x2} y2={square.y2} stroke='black' strokeWidth={lineWidth} key={`vertical-${i}`}/>
+        ))}
 
-        <line y1={15} x1={0} y2={15} x2={100} stroke='black' strokeWidth={2}></line>
-        <line y1={30 + 2} x1={0} y2={30 + 2} x2={100} stroke='black' strokeWidth={2}></line>
-        <line y1={45 + 4} x1={0} y2={45 + 4} x2={100} stroke='black' strokeWidth={2}></line>
-        <line y1={60 + 6} x1={0} y2={60 + 6} x2={100} stroke='black' strokeWidth={2}></line>
-        <line y1={75 + 8} x1={0} y2={75 + 8} x2={100} stroke='black' strokeWidth={2}></line>
+        {horizontalLines.map((square, i) => (
+          <line x1={square.x1} y1={square.y1} x2={square.x2} y2={square.y2} stroke='black' strokeWidth={lineWidth} key={`horizonal-${i}`}/>
+        ))}
 
-        <circle cx={30 + 2} cy={45 - 15/3} r={5}></circle>
+        {circles.map((circle, i) => {
+          const cx = circle.xIndex*squareWidth + circle.xIndex * lineWidth + squareWidth / 2 - lineWidth / 2;
+          const cy = circle.yIndex*squareHeight + circle.yIndex * lineWidth + squareHeight / 2 - lineWidth / 2;
+
+          return (
+            <circle
+              cx={cx}
+              cy={cy}
+              r={circle.r}
+              key={`circle-${i}`}
+              fill="red"
+            />
+          );
+        })}
     </svg>
   )
 }
