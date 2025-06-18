@@ -218,7 +218,7 @@ function Song() {
       });  
     });
   
-    element.addEventListener('click', (e) => {
+    element.addEventListener('dblclick', (e) => {
       e.stopPropagation();
       handleDeleteChord(chordTempId);
       if (element.parentElement) {
@@ -548,6 +548,9 @@ function Song() {
               e.currentTarget.style.border = "none";
             }}
             onClick={(e) => {
+              e.stopPropagation();                    
+            }}
+            onDoubleClick={(e) => {
               e.stopPropagation();
               handleDeleteChord(chord.id);
             }}
@@ -637,6 +640,9 @@ function Song() {
                     e.currentTarget.style.border = "1px solid transparent";
                   }}
                   onClick={(e) => {
+                    e.stopPropagation();                    
+                  }}
+                  onDoubleClick={(e) => {
                     e.stopPropagation();
                     handleDeleteChord(chord.id);
                   }}
