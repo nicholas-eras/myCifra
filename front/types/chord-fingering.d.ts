@@ -6,6 +6,7 @@ declare module 'chord-fingering' {
       fret: number;
       stringIndices: number[];
     };
+    positions: any[];
   }
 
   export interface ChordResult {

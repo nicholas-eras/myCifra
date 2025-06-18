@@ -1,6 +1,9 @@
 import React from 'react'
+import { findGuitarChord } from "chord-fingering";
+
 
 const ChordDiagram = ({ chordName } : {chordName : string}) => {
+  const svgSize = 250;
   const maxWidthRel = 100;
   const maxHeightRel = 100;
   const numVerticalLines = 5;
@@ -14,7 +17,7 @@ const ChordDiagram = ({ chordName } : {chordName : string}) => {
   const verticalLines = Array(numVerticalLines).fill({}).map((obj, i) => ({
     x1 : (i+1)*squareHeight + lineWidth*i,
     x2: (i+1)*squareHeight + lineWidth*i,
-    y1: 0,
+    y1: squareHeight,
     y2: 100
   }));
 
@@ -24,53 +27,83 @@ const ChordDiagram = ({ chordName } : {chordName : string}) => {
     x1: 0,
     x2: 100
   }));
-
-  const circles = [
-    {
-      xIndex: 1,
-      yIndex: 2,
-      r: circleRadius
-    },
-    {
-      xIndex: 2,
-      yIndex: 1,
-      r: circleRadius
-    },
-    {
-      xIndex: 4,
-      yIndex: 0,
-      r: circleRadius
-    },
-  ];
-
-  console.log(chordName);
+  
+  const result = findGuitarChord(chordName);
+  const positions = result.fingerings[2].positions;
+  const maxFret = Math.max(...positions.map((fing) => fing.fret));
+  let minFret = Math.min(...positions.map((fing) => fing.fret));
+  
+  const diagramFingering = positions.map((fing) => {
+    let fret = fing.fret;
+    if (maxFret > 6){
+      fret -= 6;
+    }
+    return {
+      xIndex: fing.stringIndex,
+      yIndex: fret,
+      fretNotation: maxFret
+    }
+  });
+  console.log(positions);
   return (
-    <svg width={250} height={250} viewBox="0 0 100 100">
-        <polygon points="0,0 0,100 100,100, 100,0" fill={"white"}></polygon>
-        
-        {verticalLines.map((square, i) => (
-          <line x1={square.x1} y1={square.y1} x2={square.x2} y2={square.y2} stroke='black' strokeWidth={lineWidth} key={`vertical-${i}`}/>
-        ))}
+    <div>
+      <svg 
+        width={ squareWidth / 100 * svgSize} 
+        height={svgSize} 
+        viewBox={`0 0 ${squareWidth} 100`} 
+        preserveAspectRatio="xMidYMid meet"
+      >
+        <polygon points={`0,0 0,100 ${squareWidth},100 ${squareWidth},0`} fill="gray" />
+        <text
+          x={squareWidth / 2}
+          y={
+            minFret > 6 ? 
+            ((minFret - 6 + 1) * (squareHeight))
+            :
+            ((minFret + 1) * (squareHeight))
+          }
+          fontSize={squareHeight}          
+          fill='black'
+          textAnchor='middle'
+        >
+          {minFret !== 0 && minFret}
+        </text>
+      </svg>
 
-        {horizontalLines.map((square, i) => (
-          <line x1={square.x1} y1={square.y1} x2={square.x2} y2={square.y2} stroke='black' strokeWidth={lineWidth} key={`horizonal-${i}`}/>
-        ))}
+      <svg width={svgSize} height={svgSize} viewBox="0 0 100 100">
+          <polygon points="0,0 0,100 100,100, 100,0" fill={"white"}></polygon>
+          
+          {verticalLines.map((square, i) => (
+            <line x1={square.x1} y1={square.y1} x2={square.x2} y2={square.y2} stroke='black' strokeWidth={lineWidth/2} key={`vertical-${i}`}/>
+          ))}
 
-        {circles.map((circle, i) => {
-          const cx = circle.xIndex*squareWidth + circle.xIndex * lineWidth + squareWidth / 2 - lineWidth / 2;
-          const cy = circle.yIndex*squareHeight + circle.yIndex * lineWidth + squareHeight / 2 - lineWidth / 2;
+          {horizontalLines.map((square, i) => {
+            if (i === 0 ){
+              return maxFret > 6 && <line x1={square.x1} y1={square.y1} x2={square.x2} y2={square.y2} stroke='black' strokeWidth={lineWidth} key={`horizonal-${i}`}/>
+            }
+            else{
+              return <line x1={square.x1} y1={square.y1} x2={square.x2} y2={square.y2} stroke='black' strokeWidth={i === 0 ? 1 : lineWidth} key={`horizonal-${i}`}/>
+            }
+          }                        
+          )}
 
-          return (
-            <circle
-              cx={cx}
-              cy={cy}
-              r={circle.r}
-              key={`circle-${i}`}
-              fill="red"
-            />
-          );
-        })}
-    </svg>
+          {diagramFingering.map((circle, i) => {
+            const cx = circle.xIndex*squareWidth + circle.xIndex * lineWidth + squareWidth / 2 - lineWidth / 2;
+            const cy = circle.yIndex*squareHeight + circle.yIndex * lineWidth + squareHeight / 2 - lineWidth / 2;
+            return (              
+              <circle
+                cx={cx}
+                cy={cy}
+                r={circleRadius}
+                key={`circle-${i}`}
+                fill={circle.yIndex === 0 ? "none" : "red"}
+                stroke="black"
+                strokeWidth={1}
+              />              
+            );
+          })}
+      </svg>
+    </div>
   )
 }
 
