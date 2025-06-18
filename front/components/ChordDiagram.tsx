@@ -36,9 +36,8 @@ const ChordDiagram = ({ chordName } : {chordName : string}) => {
       fretNotation: maxFret
     }
   });
-  console.log(positions);
-  console.log(diagramFingering);
-  const svgSize = 250;
+
+  const svgSize = 100;
   const maxWidthRel = 100;
   const maxHeightRel = 100;
   const numVerticalLines = 5;
@@ -71,7 +70,7 @@ const ChordDiagram = ({ chordName } : {chordName : string}) => {
         viewBox={`0 0 ${squareWidth} 100`} 
         preserveAspectRatio="xMidYMid meet"
       >
-        <polygon points={`0,0 0,100 ${squareWidth},100 ${squareWidth},0`} fill="gray" />
+        <polygon points={`0,0 0,100 ${squareWidth},100 ${squareWidth},0`} fill="white" />
         <text
           x={squareWidth / 2}
           y={
