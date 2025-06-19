@@ -46,3 +46,15 @@ model SongText {
   lyrics       Json
   song      Song     @relation(fields: [songId], references: [id], onDelete: Cascade)
 }
+
+model User {
+  id             String   @id @default(cuid())
+  email          String   @unique
+  name           String?
+  avatarUrl      String?  
+  googleId       String   @unique 
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+

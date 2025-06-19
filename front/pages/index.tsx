@@ -7,6 +7,30 @@ import { FaPen } from "react-icons/fa";
 
 function App() {
   const [songList, setSongList] = useState<any[]>([]);
+  const handleGoogleLogin = async () => {
+    try {
+      const backendUrl = process.env.NEXT_PUBLIC_ENVIRONMENT_BACKEND ?? 'http://localhost:3000';
+      const res = await fetch(`${backendUrl}/api/auth/google`);
+
+      if (!res.ok) {
+        throw new Error(`Erro HTTP: ${res.status}`);
+      }
+
+      const data = await res.json();
+
+      if (!data?.url) {
+        throw new Error('Resposta inválida do servidor: campo "url" ausente');
+      }
+
+      window.location.href = data.url;
+
+    } catch (err) {
+      const frontendUrl = process.env.NEXT_PUBLIC_ENVIRONMENT_FRONTEND ?? 'http://localhost:3001';
+      console.error('Erro ao iniciar login com Google:', err);
+      window.location.href = frontendUrl;
+    }
+  };
+
 
   useEffect(() => {
     const fetchSong = async () => {
@@ -63,6 +87,14 @@ function App() {
           )}
         </tbody>
       </table>
+        <button onClick={handleGoogleLogin} className={styles.googleButton}>
+          <img
+            src="https://www.svgrepo.com/show/475656/google-color.svg"
+            alt="Google"
+            className={styles.googleIcon}
+          />
+          Entrar com Google
+        </button>
     </div>
   );
 }
