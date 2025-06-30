@@ -43,12 +43,12 @@ const ChordDiagram = ({ chordName } : {chordName : string}) => {
       fretNotation: maxFret
     }
   });
-
+  console.log(positions);
   const svgSize = 100;
-  const maxWidthRel = 100;
-  const maxHeightRel = 100;
-  const numVerticalLines = 5;
-  const numHorizontalLines = 5;
+  const maxWidthRel = 110;
+  const maxHeightRel = 110;
+  const numVerticalLines = 6;
+  const numHorizontalLines = 6;
   const numVerticalSquares = numVerticalLines + 1;
   const numHorizontalSquares = numHorizontalLines + 1;
   const lineWidth = 2;
@@ -56,17 +56,17 @@ const ChordDiagram = ({ chordName } : {chordName : string}) => {
   const squareHeight = (maxHeightRel - numVerticalLines*lineWidth) / numVerticalSquares;
   const circleRadius = 5;
   const verticalLines = Array(numVerticalLines).fill({}).map((obj, i) => ({
-    x1 : (i+1)*squareHeight + lineWidth*i,
-    x2: (i+1)*squareHeight + lineWidth*i,
+    x1 : (i+1)*squareHeight,
+    x2: (i+1)*squareHeight,
     y1: squareHeight,
     y2: 100
   }));
   
   const horizontalLines = Array(numHorizontalLines).fill({}).map((obj, i) => ({
-    y1 : (i+1)*squareWidth + lineWidth*i,
-    y2: (i+1)*squareWidth + lineWidth*i,
-    x1: 0,
-    x2: 100
+    y1 : (i+1)*squareHeight,
+    y2: (i+1)*squareHeight,
+    x1: squareWidth,
+    x2: 100 - squareWidth - lineWidth
   }));
   
   return (
@@ -80,13 +80,13 @@ const ChordDiagram = ({ chordName } : {chordName : string}) => {
         <polygon points={`0,0 0,100 ${squareWidth},100 ${squareWidth},0`} fill="white" />
         <text
           x={squareWidth / 2}
-          y={
+          y={ 
             minFret > 6 ? 
-            ((minFret - 6 + 1) * (squareHeight))
+            ((minFret - 6 +1)*squareHeight - squareHeight / 4)
             :
-            ((minFret + 1) * (squareHeight))
+            ((minFret+1)*squareHeight - squareHeight / 4)
           }
-          fontSize={squareHeight}          
+          fontSize={squareHeight}  
           fill='black'
           textAnchor='middle'
         >
@@ -95,29 +95,29 @@ const ChordDiagram = ({ chordName } : {chordName : string}) => {
       </svg>
 
       <svg width={1.25*svgSize} height={svgSize} viewBox="0 0 100 100">
-          <polygon points="0,0 0,100 100,100, 100,0" fill={"white"}></polygon>
+          <polygon points="-5,0 -5,105 105,105, 105,0" fill={"white"}></polygon>
           
           {verticalLines.map((square, i) => (
             <line x1={square.x1} y1={square.y1} x2={square.x2} y2={square.y2} stroke='black' strokeWidth={lineWidth/2} key={`vertical-${i}`}/>
           ))}
-          <line x1={verticalLines[verticalLines.length - 1].x1 + squareHeight} y1={verticalLines[verticalLines.length - 1].y1} x2={verticalLines[verticalLines.length - 1].x2 + squareHeight} y2={verticalLines[verticalLines.length - 1].y2} stroke='black' strokeWidth={lineWidth/2} key={`vertical-last`}/>
+          {/* <line x1={verticalLines[verticalLines.length - 1].x1 + squareHeight} y1={verticalLines[verticalLines.length - 1].y1} x2={verticalLines[verticalLines.length - 1].x2 + squareHeight} y2={verticalLines[verticalLines.length - 1].y2} stroke='black' strokeWidth={lineWidth/2} key={`vertical-last`}/> */}
 
           {horizontalLines.map((square, i) => {
-            if (i === 0 ){
-              return <line x1={square.x1} y1={square.y1} x2={square.x2} y2={square.y2} stroke='black' strokeWidth={maxFret > 6 ? lineWidth : lineWidth / 2} key={`horizonal-${i}`}/>
-            }
-            else{
-              return <line x1={square.x1} y1={square.y1} x2={square.x2} y2={square.y2} stroke='black' strokeWidth={i === 0 ? 1 : lineWidth} key={`horizonal-${i}`}/>
-            }
-          }                        
+              if (i === 0 ){
+                return <line x1={square.x1} y1={square.y1} x2={square.x2} y2={square.y2} stroke='black' strokeWidth={maxFret > 6 ? lineWidth : lineWidth / 2} key={`horizonal-${i}`}/>
+              }
+              else{
+                return <line x1={square.x1} y1={square.y1} x2={square.x2} y2={square.y2} stroke='black' strokeWidth={i === 0 ? 1 : lineWidth} key={`horizonal-${i}`}/>
+              }
+            }                        
           )}
 
           {diagramFingering.map((circle, i) => {
             if (circle.yIndex < 0){
               circle.yIndex = 0;
-            }
-            const cx = circle.xIndex*squareWidth + circle.xIndex * lineWidth + squareWidth  - lineWidth / 2;
-            const cy = circle.yIndex*squareHeight + circle.yIndex * lineWidth + squareHeight / 2 - lineWidth / 2;
+            }   
+            const cx = (circle.xIndex+1)*squareWidth ;
+            const cy = circle.yIndex > 0 ? (circle.yIndex)*squareHeight + squareHeight / 2 : squareHeight / 2;
             return (              
               <circle
                 cx={cx}
