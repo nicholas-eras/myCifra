@@ -5,12 +5,12 @@ const converter_acordes = (texto: string) => {
   return texto.replace(/([A-G][#b]?)(7M)/g, '$1maj7').replaceAll("º", "°");
 }
 
-const ChordDiagram = ({ chordName } : {chordName : string}) => {  
+const ChordDiagram = ({ chordName } : {chordName : string}) => {
   const result = findGuitarChord(converter_acordes(chordName));
   if (!result){
     return <></>
   }
-  
+  console.log(result);
   const [chordIndex, setChordIndex] = useState<number>(0);
 
   const swapChord = (increment: number) => {
@@ -21,7 +21,7 @@ const ChordDiagram = ({ chordName } : {chordName : string}) => {
 
   const positions = result.fingerings[chordIndex].positions;
   const maxFret = Math.max(...positions.map((fing) => fing.fret));
-  let minFret = 0;
+  let minFret = 1;
   for (let i = 0; i <= 5; i++) {
     const stringFingering = positions.find(p => p.stringIndex === i);
     if (stringFingering && stringFingering.fret > 0) {
@@ -30,20 +30,37 @@ const ChordDiagram = ({ chordName } : {chordName : string}) => {
     }
   }
 
+  let barre = null;
+  if (result.fingerings[chordIndex].barre){
+    barre = {
+      start: Math.min(...result.fingerings[chordIndex].barre.stringIndices),
+      end: Math.max(...result.fingerings[chordIndex].barre.stringIndices),
+      fret: result.fingerings[chordIndex].barre.fret,
+      strings: result.fingerings[chordIndex].barre.stringIndices
+    }
+  }
+  console.log(barre);
+  let valueToSubtract = 0;
   const diagramFingering = positions.map((fing) => {
     let fret = fing.fret;
-    if (maxFret > 6){
+    if (maxFret > 6 && minFret >= 6){
       if (fret > 6){
         fret -= 6;
+        valueToSubtract = 6;
       }
+    }
+    else if (maxFret > 6 && minFret >= 3){      
+        fret -= 3;
+        valueToSubtract = 3;
     }
     return {
       xIndex: fing.stringIndex,
       yIndex: fret,
-      fretNotation: maxFret
+      fretNotation: maxFret,
+      barre: barre?.strings.includes(fing.stringIndex) ?? false
     }
   });
-  console.log(positions);
+
   const svgSize = 100;
   const maxWidthRel = 110;
   const maxHeightRel = 110;
@@ -81,8 +98,8 @@ const ChordDiagram = ({ chordName } : {chordName : string}) => {
         <text
           x={squareWidth / 2}
           y={ 
-            minFret > 6 ? 
-            ((minFret - 6 +1)*squareHeight - squareHeight / 4)
+            minFret > valueToSubtract ? 
+            ((minFret - valueToSubtract +1)*squareHeight - squareHeight / 4)
             :
             ((minFret+1)*squareHeight - squareHeight / 4)
           }
@@ -100,19 +117,22 @@ const ChordDiagram = ({ chordName } : {chordName : string}) => {
           {verticalLines.map((square, i) => (
             <line x1={square.x1} y1={square.y1} x2={square.x2} y2={square.y2} stroke='black' strokeWidth={lineWidth/2} key={`vertical-${i}`}/>
           ))}
-          {/* <line x1={verticalLines[verticalLines.length - 1].x1 + squareHeight} y1={verticalLines[verticalLines.length - 1].y1} x2={verticalLines[verticalLines.length - 1].x2 + squareHeight} y2={verticalLines[verticalLines.length - 1].y2} stroke='black' strokeWidth={lineWidth/2} key={`vertical-last`}/> */}
 
           {horizontalLines.map((square, i) => {
               if (i === 0 ){
-                return <line x1={square.x1} y1={square.y1} x2={square.x2} y2={square.y2} stroke='black' strokeWidth={maxFret > 6 ? lineWidth : lineWidth / 2} key={`horizonal-${i}`}/>
+                return <line x1={square.x1} y1={square.y1} x2={square.x2} y2={square.y2} stroke='black' strokeWidth={valueToSubtract > 0 ? 0 : lineWidth / 2} key={`horizonal-${i}`}/>
               }
               else{
                 return <line x1={square.x1} y1={square.y1} x2={square.x2} y2={square.y2} stroke='black' strokeWidth={i === 0 ? 1 : lineWidth} key={`horizonal-${i}`}/>
               }
             }                        
           )}
-
+          
           {diagramFingering.map((circle, i) => {
+            if (circle.barre){
+              return 
+            }
+
             if (circle.yIndex < 0){
               circle.yIndex = 0;
             }   
@@ -130,8 +150,20 @@ const ChordDiagram = ({ chordName } : {chordName : string}) => {
               />              
             );
           })}
-      </svg>
 
+          { barre && 
+            <rect 
+              width={barre.start === 0 ? (barre.end - barre.start)*squareWidth : (barre.end - barre.start + 1)*squareWidth}
+              height={squareHeight}
+              x={ barre.start === 0 ? (barre.start + 1)*squareWidth : (barre.start)*squareWidth}
+              y={(barre.fret)*squareHeight}
+              rx={10}
+              ry={10}
+              fill='red'
+              stroke='black'
+            />
+          }
+      </svg>
       <div className="button-row" style={{display: "flex", flexDirection: "row"}}>
         <div
           className="first-svg-space"

@@ -10,18 +10,15 @@ export class SongService {
   constructor(private prisma: PrismaService) {}
 
   async create(createSongDto: CreateSongDto) {
-    const { name, artist, lyrics } = createSongDto;
+    const { name, artist, lyrics, createdBy } = createSongDto;
 
     const newSong = await this.prisma.song.create({
       data: {
         name,
         artist,
+        createdBy
       },
     });
-    
-    if (!lyrics){
-      return newSong;
-    }
     
     await this.prisma.songText.create({
       data: {
@@ -37,11 +34,6 @@ export class SongService {
 
   async findAll() {    
     const song = await this.prisma.song.findMany({
-      where: {
-        id: {
-          gte: 13
-        }
-      },
       orderBy: {
         name: "asc"
       }

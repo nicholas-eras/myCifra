@@ -11,10 +11,11 @@ model Song {
   id     Int      @id @default(autoincrement())
   artist String
   name   String
-
+  createdBy  String? 
   lyrics Lyric[]
 
   SongText SongText[]
+  created    User?     @relation(fields: [createdBy], references: [id])
 }
 
 model Lyric {
@@ -43,8 +44,9 @@ model SongText {
   id         Int   @id @default(autoincrement())
   songId     Int
   createdAt  DateTime @default(now())
-  lyrics       Json
-  song      Song     @relation(fields: [songId], references: [id], onDelete: Cascade)
+  lyrics     Json
+
+  song       Song     @relation(fields: [songId], references: [id], onDelete: Cascade)
 }
 
 model User {
@@ -55,6 +57,8 @@ model User {
   googleId       String   @unique 
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
+
+  Song Song[]
 }
 
 

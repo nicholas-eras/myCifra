@@ -17,6 +17,7 @@ interface LyricLine {
 }
 
 export class CreateSongDto {
+  createdBy: string;
   name: string;
   artist: string;
   lyrics?: Omit<LyricLine, "songId">[];
