@@ -697,11 +697,11 @@ function Song() {
                                       ref={popoverRef} // Adiciona a ref aqui
                                       style={{
                                         position: 'fixed',
-                                        left: visibleChord.x + 50,
-                                        top: visibleChord.y - 100,
+                                        left: visibleChord.x,
+                                        top: visibleChord.y,
                                         zIndex: 999,
                                         background: 'white',
-                                        padding: 4,
+                                        paddingBottom: '4px',
                                         border: '1px solid black',
                                         borderRadius: 4,
                                       }}

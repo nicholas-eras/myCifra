@@ -20,6 +20,7 @@ const ChordDiagram = ({ chordName } : {chordName : string}) => {
   };
 
   const positions = result.fingerings[chordIndex].positions;
+  
   const maxFret = Math.max(...positions.map((fing) => fing.fret));
   let minFret = 1;
   for (let i = 0; i <= 5; i++) {
@@ -61,6 +62,10 @@ const ChordDiagram = ({ chordName } : {chordName : string}) => {
     }
   });
 
+  if (barre && valueToSubtract > 0){
+    barre.fret -= valueToSubtract;
+  }
+
   const svgSize = 100;
   const maxWidthRel = 110;
   const maxHeightRel = 110;
@@ -72,9 +77,10 @@ const ChordDiagram = ({ chordName } : {chordName : string}) => {
   const squareWidth = (maxWidthRel - numHorizontalLines*lineWidth) / numHorizontalSquares;
   const squareHeight = (maxHeightRel - numVerticalLines*lineWidth) / numVerticalSquares;
   const circleRadius = 5;
+
   const verticalLines = Array(numVerticalLines).fill({}).map((obj, i) => ({
-    x1 : (i+1)*squareHeight,
-    x2: (i+1)*squareHeight,
+    x1 : (i)*squareHeight,
+    x2: (i)*squareHeight,
     y1: squareHeight,
     y2: 100
   }));
@@ -82,38 +88,54 @@ const ChordDiagram = ({ chordName } : {chordName : string}) => {
   const horizontalLines = Array(numHorizontalLines).fill({}).map((obj, i) => ({
     y1 : (i+1)*squareHeight,
     y2: (i+1)*squareHeight,
-    x1: squareWidth,
-    x2: 100 - squareWidth - lineWidth
+    x1: 0,
+    x2: 100 - 2*squareWidth - lineWidth
   }));
-  
+
+  const charWidth = 6;
+  const padding = 10;
+
+  const chordWidth = chordName.length * charWidth + padding;
+
   return (
     <div>
-      <svg 
-        width={ squareWidth / 100 * svgSize} 
-        height={svgSize} 
-        viewBox={`0 0 ${squareWidth} 100`} 
+      <svg
+        width={(chordWidth / 100) * svgSize}
+        height={svgSize}
+        viewBox={`0 0 ${chordWidth} 100`}
         preserveAspectRatio="xMidYMid meet"
       >
-        <polygon points={`0,0 0,100 ${squareWidth},100 ${squareWidth},0`} fill="white" />
+        <rect x="0" y="0" width={chordWidth} height="100" fill="none" />
+        
         <text
-          x={squareWidth / 2}
+          x={chordWidth / 2}
+          y={squareHeight}
+          fontSize={squareHeight}
+          fill="black"
+          textAnchor="middle"
+        >
+          {chordName}
+        </text>
+
+        <text
+          x={chordWidth / 2}
           y={ 
             minFret > valueToSubtract ? 
             ((minFret - valueToSubtract +1)*squareHeight - squareHeight / 4)
             :
             ((minFret+1)*squareHeight - squareHeight / 4)
           }
-          fontSize={squareHeight}  
-          fill='black'
-          textAnchor='middle'
+          fontSize={squareHeight}
+          fill="black"
+          textAnchor="middle"
         >
           {minFret !== 0 && minFret}
         </text>
       </svg>
 
-      <svg width={1.25*svgSize} height={svgSize} viewBox="0 0 100 100">
-          <polygon points="-5,0 -5,105 105,105, 105,0" fill={"white"}></polygon>
-          
+      <svg height={svgSize} viewBox={`0 0 ${numVerticalLines * squareWidth} 100`}>
+          <polygon points="0,0 0,100 50,100, 50,0" fill={"white"}></polygon>
+
           {verticalLines.map((square, i) => (
             <line x1={square.x1} y1={square.y1} x2={square.x2} y2={square.y2} stroke='black' strokeWidth={lineWidth/2} key={`vertical-${i}`}/>
           ))}
@@ -135,8 +157,9 @@ const ChordDiagram = ({ chordName } : {chordName : string}) => {
 
             if (circle.yIndex < 0){
               circle.yIndex = 0;
-            }   
-            const cx = (circle.xIndex+1)*squareWidth ;
+            } 
+            
+            const cx = (circle.xIndex)*squareWidth ;
             const cy = circle.yIndex > 0 ? (circle.yIndex)*squareHeight + squareHeight / 2 : squareHeight / 2;
             return (              
               <circle
@@ -153,9 +176,9 @@ const ChordDiagram = ({ chordName } : {chordName : string}) => {
 
           { barre && 
             <rect 
-              width={barre.start === 0 ? (barre.end - barre.start)*squareWidth : (barre.end - barre.start + 1)*squareWidth}
+              width={barre.start === 0 ? (barre.end - barre.start)*squareWidth : (barre.end - barre.start+1)*squareWidth}
               height={squareHeight}
-              x={ barre.start === 0 ? (barre.start + 1)*squareWidth : (barre.start)*squareWidth}
+              x={ barre.start === 0 ? (barre.start)*squareWidth : (barre.start)*squareWidth - squareWidth*0.5}
               y={(barre.fret)*squareHeight}
               rx={10}
               ry={10}
@@ -164,24 +187,23 @@ const ChordDiagram = ({ chordName } : {chordName : string}) => {
             />
           }
       </svg>
+
       <div className="button-row" style={{display: "flex", flexDirection: "row"}}>
         <div
           className="first-svg-space"
           style={{
-            width: `${squareWidth / 100 * svgSize}px`,
+            width: `${(chordWidth / 100) * svgSize}px`,
             height: `${squareHeight}px`
           }}>
         </div>
         <div
           className="swap-fingering"
           style={{
-            width: `${svgSize}px`,
             display: "flex",
             flexDirection:"row",
             alignItems: "center",
-            justifyContent: "center"
           }}>
-          <button onClick={()=>swapChord(-1)}>{"<"}</button>
+          <button onClick={()=>swapChord(-1)} style={{marginLeft:`${.75*squareHeight}px`}}>{"<"}</button>
           <button onClick={()=>swapChord(1)}>{">"}</button>
         </div>
       </div>
