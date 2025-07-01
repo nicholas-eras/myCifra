@@ -10,7 +10,7 @@ const ChordDiagram = ({ chordName } : {chordName : string}) => {
   if (!result){
     return <></>
   }
-  console.log(result);
+
   const [chordIndex, setChordIndex] = useState<number>(0);
 
   const swapChord = (increment: number) => {
@@ -39,7 +39,7 @@ const ChordDiagram = ({ chordName } : {chordName : string}) => {
       strings: result.fingerings[chordIndex].barre.stringIndices
     }
   }
-  console.log(barre);
+
   let valueToSubtract = 0;
   const diagramFingering = positions.map((fing) => {
     let fret = fing.fret;

@@ -12,6 +12,7 @@ import { IoMusicalNotesOutline } from "react-icons/io5";
 import { IoMusicalNotes } from "react-icons/io5";
 import { HiHashtag } from "react-icons/hi2";
 import ChordDiagram from '../components/ChordDiagram';
+import { IoEyeSharp } from "react-icons/io5";
 
 function Song() {
   const router = useRouter();
@@ -24,7 +25,8 @@ function Song() {
   const [chordsPreferences, setChordsPreferences] = useState<Record<number, "#" | "b">>({});
   const [generalPreference, setGeneralPreference] = useState<string>("");
   const [visibleChord, setVisibleChord] = useState<null | { chordName: string; x: number; y: number }>(null);
-
+  const [canEditChords, setCanEditChords] = useState(false);
+  
   const tunes = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
   const tunesBemol = ["C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B"];
 
@@ -177,6 +179,9 @@ function Song() {
     height?: number,
   ) => {
     e.stopPropagation();
+    if (!canEditChords){
+      return
+    }
 
     const mouseX: number = e.clientX;
     const div = e.currentTarget.getBoundingClientRect();
@@ -499,10 +504,13 @@ function Song() {
                 setGeneralPreference("b");
               }}>♭</span>
             </div>
-            <div className="change-font-size-action">
-              <Link href={`/song/${songId}`}>
+            <div className="change-font-size-action" onClick={()=>setCanEditChords(!canEditChords)}>
+              {
+                canEditChords ? 
+                <IoEyeSharp />
+                :
                 <FaPen />
-              </Link>
+              }
             </div>
           </div>
           <div className={styles["tune"]}>
@@ -574,6 +582,9 @@ function Song() {
                                   });
                                 }}
                                 onDoubleClick={(e) => {
+                                  if (!canEditChords){
+                                    return
+                                  }
                                   e.stopPropagation();
                                   handleDeleteChord(chord.id);
                                 }}
@@ -672,6 +683,9 @@ function Song() {
                                         });
                                       }}
                                       onDoubleClick={(e) => {
+                                        if (!canEditChords){
+                                          return
+                                        }
                                         e.stopPropagation();
                                         handleDeleteChord(chord.id);
                                       }}
