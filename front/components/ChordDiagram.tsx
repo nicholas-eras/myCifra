@@ -79,8 +79,8 @@ const ChordDiagram = ({ chordName } : {chordName : string}) => {
   const circleRadius = 5;
 
   const verticalLines = Array(numVerticalLines).fill({}).map((obj, i) => ({
-    x1 : (i)*squareHeight,
-    x2: (i)*squareHeight,
+    x1 : (i+.5)*squareHeight,
+    x2: (i+.5)*squareHeight,
     y1: squareHeight,
     y2: 100
   }));
@@ -88,8 +88,8 @@ const ChordDiagram = ({ chordName } : {chordName : string}) => {
   const horizontalLines = Array(numHorizontalLines).fill({}).map((obj, i) => ({
     y1 : (i+1)*squareHeight,
     y2: (i+1)*squareHeight,
-    x1: 0,
-    x2: 100 - 2*squareWidth - lineWidth
+    x1: squareHeight/4,
+    x2: 100 - squareWidth - 2*lineWidth
   }));
 
   const charWidth = 6;
@@ -134,7 +134,7 @@ const ChordDiagram = ({ chordName } : {chordName : string}) => {
       </svg>
 
       <svg height={svgSize} viewBox={`0 0 ${numVerticalLines * squareWidth} 100`}>
-          <polygon points="0,0 0,100 50,100, 50,0" fill={"white"}></polygon>
+          <polygon points="0,0 0,100 100,100, 100,0" fill={"white"}></polygon>
 
           {verticalLines.map((square, i) => (
             <line x1={square.x1} y1={square.y1} x2={square.x2} y2={square.y2} stroke='black' strokeWidth={lineWidth/2} key={`vertical-${i}`}/>
@@ -159,7 +159,7 @@ const ChordDiagram = ({ chordName } : {chordName : string}) => {
               circle.yIndex = 0;
             } 
             
-            const cx = (circle.xIndex)*squareWidth ;
+            const cx = (circle.xIndex + .5)*squareWidth ;
             const cy = circle.yIndex > 0 ? (circle.yIndex)*squareHeight + squareHeight / 2 : squareHeight / 2;
             return (              
               <circle
@@ -176,9 +176,9 @@ const ChordDiagram = ({ chordName } : {chordName : string}) => {
 
           { barre && 
             <rect 
-              width={barre.start === 0 ? (barre.end - barre.start)*squareWidth : (barre.end - barre.start+1)*squareWidth}
+              width={barre.start === 0 ? (barre.end - barre.start + 0.5)*squareWidth : (barre.end - barre.start+1.5)*squareWidth}
               height={squareHeight}
-              x={ barre.start === 0 ? (barre.start)*squareWidth : (barre.start)*squareWidth - squareWidth*0.5}
+              x={ barre.start === 0 ? (barre.start + 0.25)*squareWidth : (barre.start - 0.75)*squareWidth}
               y={(barre.fret)*squareHeight}
               rx={10}
               ry={10}
