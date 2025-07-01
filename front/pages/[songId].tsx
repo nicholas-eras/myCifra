@@ -645,6 +645,11 @@ function Song() {
                           )}
                           {lyric.text.split(" ").map((word: any, wordIndex: any) => {
                             const chords = lyric.chords.filter((c: any) => c.position === wordIndex);
+                            const maxExtent = chords.reduce((max: number, chord: any) => {
+                              const extent = parseFloat(chord.width +1|| 0) + (parseFloat(chord.offset || 0))*parseFloat(word.length + 1|| 0);
+                              return extent > max ? extent : max;
+                            }, 0);
+                            const spanChordWidth = Math.max(maxExtent, word.length);
                             return (
                               <div
                                 key={`block-${i}-row-${j}-word-${wordIndex}`}
@@ -660,7 +665,7 @@ function Song() {
                                 <span
                                   style={{
                                     height: `${fontSize}px`,
-                                    width: "100%",
+                                    width: `${spanChordWidth}ch`,
                                     display: "block",
                                     position: "relative",
                                   }}
@@ -671,7 +676,7 @@ function Song() {
                                       key={`block-${i}-row-${j}-chord-${wordIndex}-${chordIndex}`}
                                       style={{
                                         width: chord.width || "auto",
-                                        left: `${chord.offset * 100}%`,
+                                        left: `${chord.offset * word.length}ch`,
                                         background: "transparent",
                                         color: "orange",
                                         border: "1px solid transparent",
@@ -750,7 +755,7 @@ function Song() {
                                 >
                                   {word}
                                 </span>
-                              </div>
+                              </div> 
                             );
                           })}
                         </div>
