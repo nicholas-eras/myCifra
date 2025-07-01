@@ -26,7 +26,8 @@ function Song() {
   const [generalPreference, setGeneralPreference] = useState<string>("");
   const [visibleChord, setVisibleChord] = useState<null | { chordName: string; x: number; y: number }>(null);
   const [canEditChords, setCanEditChords] = useState(false);
-  
+  const clickTimeout = useRef<NodeJS.Timeout | null>(null);
+
   const tunes = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
   const tunesBemol = ["C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B"];
 
@@ -574,16 +575,32 @@ function Song() {
                                 }}
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  const rect = e.currentTarget.getBoundingClientRect();
-                                  setVisibleChord({
-                                    chordName: chord.chord,
-                                    x: rect.left,
-                                    y: rect.top,
-                                  });
-                                }}
+                                  const target = e.currentTarget;
+                                  if (clickTimeout.current) {
+                                    clearTimeout(clickTimeout.current);
+                                    clickTimeout.current = null;
+                                  }
+                                  else{
+                                      clickTimeout.current = setTimeout(() => {
+                                        clickTimeout.current = null;
+
+                                        e.stopPropagation();
+                                        const rect = target.getBoundingClientRect();
+                                        setVisibleChord({
+                                          chordName: chord.chord,
+                                          x: rect.left,
+                                          y: rect.top,
+                                        });
+                                      }, 250);                         
+                                    }
+                                  }}
                                 onDoubleClick={(e) => {
                                   if (!canEditChords){
                                     return
+                                  }
+                                  if (clickTimeout.current) {
+                                    clearTimeout(clickTimeout.current);
+                                    clickTimeout.current = null;
                                   }
                                   e.stopPropagation();
                                   handleDeleteChord(chord.id);
@@ -675,16 +692,30 @@ function Song() {
                                       }}
                                       onClick={(e) => {
                                         e.stopPropagation();
-                                        const rect = e.currentTarget.getBoundingClientRect();
-                                        setVisibleChord({
-                                          chordName: chord.chord,
-                                          x: rect.left,
-                                          y: rect.top,
-                                        });
+                                        const target = e.currentTarget;
+                                        if (clickTimeout.current) {
+                                          clearTimeout(clickTimeout.current);
+                                          clickTimeout.current = null;
+                                        }
+                                        else{
+                                          clickTimeout.current = setTimeout(() => {
+                                            clickTimeout.current = null;
+                                            const rect = target.getBoundingClientRect();
+                                            setVisibleChord({
+                                              chordName: chord.chord,
+                                              x: rect.left,
+                                              y: rect.top,
+                                            });
+                                          }, 250);
+                                        }
                                       }}
                                       onDoubleClick={(e) => {
                                         if (!canEditChords){
                                           return
+                                        }
+                                        if (clickTimeout.current) {
+                                          clearTimeout(clickTimeout.current);
+                                          clickTimeout.current = null;
                                         }
                                         e.stopPropagation();
                                         handleDeleteChord(chord.id);
