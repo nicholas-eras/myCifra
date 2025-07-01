@@ -5,7 +5,7 @@
 
 */
 -- AlterTable
-ALTER TABLE "Song" ADD COLUMN     "createdBy" TEXT NOT NULL;
+ALTER TABLE "Song" ADD COLUMN     "createdBy" TEXT;
 
 -- AddForeignKey
 ALTER TABLE "Song" ADD CONSTRAINT "Song_createdBy_fkey" FOREIGN KEY ("createdBy") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
