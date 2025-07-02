@@ -13,6 +13,6 @@ export class CifraController {
 
   @Post()
   async getCifra(@Body() body: GetCifraDto) {
-    return this.cifraService.scrapeCifra(body.url);
+    return this.cifraService.redirectScrapeCifra(body.url);
   }
 }
