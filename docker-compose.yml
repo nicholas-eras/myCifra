@@ -31,6 +31,7 @@ services:
       ENVIRONMENT_FRONTEND: ${ENVIRONMENT_FRONTEND}
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      TRUSTED_IP: ${TRUSTED_IP}
       DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}
     restart: always
     depends_on:
@@ -49,3 +50,4 @@ services:
     restart: always
     volumes:
       - ./front/:/app/
+      
