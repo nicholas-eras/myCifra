@@ -1,6 +1,6 @@
 import { Body, Controller, Post, UseGuards } from '@nestjs/common';
 import { CifraService } from './cifra.service';
-import { IpWhitelistGuard } from 'src/auth/auth.ip-whitelist.guard';
+import { IpWhitelistGuard } from '../auth/auth.ip-whitelist.guard';
 
 export class GetCifraDto {
   url: string;
