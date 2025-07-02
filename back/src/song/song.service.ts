@@ -32,19 +32,32 @@ export class SongService {
     return newSong; 
   }
 
-  async findAll() {    
-    const song = await this.prisma.song.findMany({
-      orderBy: {
-        name: "asc"
-      }
+  async findAll(userId: string | null) {
+    const songs = await this.prisma.song.findMany({
+      orderBy: { name: 'asc' },
+      select: {
+        id: true,
+        name: true,
+        createdBy: true,
+        artist: true
+      }    
     });
-    return song;
+    
+    return songs.map(song => ({
+      id: song.id,
+      name: song.name,
+      artist: song.artist,
+      createdByUser: userId ? song.createdBy === userId : false,
+    }));
   }
 
-  async findOne(id: number) {    
+  async findOne(id: number, userId: string | null) {    
     const song:any = await this.prisma.songText.findFirst({
       where: {
         songId: id,
+      },
+      include:{
+        song: true
       },
       orderBy: {
         createdAt: 'desc', // mais recente
@@ -69,15 +82,16 @@ export class SongService {
 
     if (!song || !song.lyrics) {
         return song2; // fallback
-      }
+    }
 
-      return {
-        id: song.id,
-        songId: song.songId,
-        name: song.lyrics.name,
-        artist: song.lyrics.artist,
-        lyrics: song.lyrics.lyrics ?? [],
-      };
+    return {
+      id: song.id,
+      songId: song.songId,
+      name: song.lyrics.name,
+      artist: song.lyrics.artist,
+      createdByUser: song.song.createdBy === userId,
+      lyrics: song.lyrics.lyrics ?? [],
+    };
   }
 
   async update(id: number, newSongDto: UpdateSongDto) {    

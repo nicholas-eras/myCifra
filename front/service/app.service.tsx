@@ -47,7 +47,7 @@ const songService = {
 
   async getAllSong(): Promise<any[]> {
     try {
-      const response = await fetch(`${API_URL}/song`);
+      const response = await fetch(`${API_URL}/song`, { credentials: 'include' });
 
       if (!response.ok) {
         throw new Error('Failed to fetch all song');
@@ -63,7 +63,7 @@ const songService = {
 
   async getSongById(id: number): Promise<any> {
     try {
-      const response = await fetch(`${API_URL}/song/${id}`);
+      const response = await fetch(`${API_URL}/song/${id}`, { credentials: 'include' });
 
       if (!response.ok) {
         throw new Error(`Failed to fetch song with ID ${id}`);

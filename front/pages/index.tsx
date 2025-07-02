@@ -75,11 +75,14 @@ function App() {
                     {song.name}
                   </Link>
                 </td>
-                <td style={{ textAlign: "center" }}>
-                  <Link href={`/song/${song.id}`}>
-                    <FaPen/>
-                  </Link>   
-                </td>
+                {
+                  song.createdByUser && 
+                  <td style={{ textAlign: "center" }}>
+                    <Link href={`/song/${song.id}`}>
+                      <FaPen/>
+                    </Link>   
+                  </td>
+                }
               </tr>
             ))
           ) : (

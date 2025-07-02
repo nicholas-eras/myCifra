@@ -432,20 +432,23 @@ function Song() {
             <div>{song.artist}</div>
           </div>
           <div className={styles["action"]}>
-            <button
-              onClick={handleUpdateSong}
-              style={{
-                padding: '5px 10px',
-                backgroundColor: 'green',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                marginRight: '1rem',
-              }}
-            >
-              Atualizar Música
-            </button>
+            {
+              song.createdByUser &&               
+              <button
+                onClick={handleUpdateSong}
+                style={{
+                  padding: '5px 10px',
+                  backgroundColor: 'green',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  marginRight: '1rem',
+                }}
+              >
+                Atualizar Música
+              </button>
+            }
             <Link href="/">
               <button style={{
                 padding: '5px 10px',
