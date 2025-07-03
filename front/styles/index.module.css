@@ -12,14 +12,14 @@
   box-shadow: 0 4px 10px rgba(255, 255, 255, 0.1);
 }
 
-.headingRow{
-  position: relative;
+.headingRow {
   display: flex;
-  flex-direction: row;
   align-items: center;
-  margin-bottom: .5rem;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+  flex-wrap: wrap;
 }
-
 .heading {
   text-align: center;
   font-size: 24px;
@@ -27,11 +27,25 @@
 }
 
 .linkHeading {
-  position: absolute;
   color: inherit;
   text-decoration: none;
-  display: block;
-  right: 0px;
+  background-color: #e5e7eb;
+  padding: 0.4rem 0.8rem;
+  border-radius: 4px;
+  font-size: 14px;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.linkHeading:hover {
+  background-color: #d1d5db;
+}
+
+[data-theme="dark"] .linkHeading {
+  background-color: #374151;
+}
+
+[data-theme="dark"] .linkHeading:hover {
+  background-color: #4b5563;
 }
 
 .table {

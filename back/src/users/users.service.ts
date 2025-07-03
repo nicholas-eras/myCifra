@@ -27,7 +27,16 @@ export class UsersService {
     });
   }
 
-  async getUsers(): Promise<User[] | undefined>{
-    return this.prisma.user.findMany();
+  async getUsers(): Promise<User[]> {
+    return this.prisma.user.findMany({
+      orderBy: { createdAt: 'asc' },
+    });
+  }
+
+  async updatePermissions(userId: string, permissions: Partial<Pick<User, 'isAdmin' | 'canAddSong' | 'canSyncCifra'>>): Promise<User> {
+    return this.prisma.user.update({
+      where: { id: userId },
+      data: permissions,
+    });
   }
 }

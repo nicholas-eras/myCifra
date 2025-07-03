@@ -1,0 +1,4 @@
+-- AlterTable
+ALTER TABLE "User" ADD COLUMN     "canAddSong" BOOLEAN NOT NULL DEFAULT false,
+ADD COLUMN     "canSyncCifra" BOOLEAN NOT NULL DEFAULT false,
+ADD COLUMN     "isAdmin" BOOLEAN NOT NULL DEFAULT false;

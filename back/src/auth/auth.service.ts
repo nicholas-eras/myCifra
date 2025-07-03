@@ -17,7 +17,13 @@ export class AuthService {
     const existingUser = await this.usersService.findOne(user.email);
     const userToUse = existingUser || await this.usersService.createFromGoogle(user);
   
-    const payload = { email: userToUse.email, sub: userToUse.id };
+    const payload = {
+      sub: userToUse.id,
+      email: userToUse.email,
+      isAdmin: userToUse.isAdmin,
+      canAddSong: userToUse.canAddSong,
+      canSyncCifra: userToUse.canSyncCifra
+    };
   
     return await this.jwtService.signAsync(payload, {
         secret: Buffer.from(process.env.JWT_PRIVATE_KEY!, 'base64'),

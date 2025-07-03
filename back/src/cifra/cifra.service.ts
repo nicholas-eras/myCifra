@@ -8,6 +8,7 @@ interface Chord {
   position: number;
   offset: number;
   width: string;
+  lineIndex: number;
 }
 
 interface Line {
@@ -19,7 +20,7 @@ interface Line {
 
 @Injectable()
 export class CifraService {
-  private extractArtistSong(url: string) {
+  extractArtistSong(url: string) {
     const regex = /cifraclub\.com\.br\/([^\/]+)\/([^\/]+)\/?/;
     const match = url.match(regex);
 
@@ -32,7 +33,7 @@ export class CifraService {
   }
 
 
-  private processCifra(cifra: string[]): Line[] {
+  processCifra(cifra: string[]): Line[] {
     const result: Line[] = [];
     let lineIndex = 0;
     let i = 0;
@@ -177,6 +178,7 @@ export class CifraService {
           position: -1,
           offset,
           width: `${width}ch`,
+          lineIndex: 0,
         });
       } else {
         // Caso com letra vinculada
@@ -208,39 +210,11 @@ export class CifraService {
           position,
           offset,
           width: `${width}ch`,
+          lineIndex: 0,
         });
       }
     });
 
-    return chordObjs;
-  }
-
-
-  private diferentiateLyricChords(text: string[]){
-    const chordObjs: Chord[] = [];
-    text.forEach((row: string, i: number) => {
-      if (row.startsWith('E|') || row.startsWith("B|") || row.startsWith("G|") || row.startsWith("D|") || row.startsWith("A|")){
-        return;
-      }
-      const words = row.split(" ");
-      const regex = /[a-ln-z]/; // regex: letras de a a l + n a z (exclui 'm')
-
-      words.forEach((word: string) => {
-        if (regex.test(word)){          
-          row = row.replaceAll(word, "");
-        }
-      });      
-
-      chordObjs.push({
-          id: i,
-          lyricId: i,
-          chord: row,
-          position: 0,
-          offset: 0,
-          width: `${row.length}ch`,
-        });
-    });
- 
     return chordObjs;
   }
 
@@ -251,11 +225,10 @@ export class CifraService {
     const { artista, musica } = parsed;
     const internalServiceBaseUrl = process.env.CIFRA_SCRAPER_BASE_URL;
     const fullUrl = `${internalServiceBaseUrl}/artists/${artista}/songs/${musica}`;
-
+    console.log(fullUrl);
     try {
       const cifraclubStringResponse = await axios.get(fullUrl);
       const cifraclubString = cifraclubStringResponse.data;
-
       return {
         name: cifraclubString.name,
         artist: cifraclubString.artist,

@@ -43,12 +43,15 @@ export class SongService {
       }    
     });
     
-    return songs.map(song => ({
-      id: song.id,
-      name: song.name,
-      artist: song.artist,
-      createdByUser: userId ? song.createdBy === userId : false,
-    }));
+    return {
+      isAdmin: true,
+      songs :songs.map(song => ({
+        id: song.id,
+        name: song.name,
+        artist: song.artist,
+        createdByUser: userId ? song.createdBy === userId : false,
+      })
+    )};
   }
 
   async findOne(id: number, userId: string | null) {    

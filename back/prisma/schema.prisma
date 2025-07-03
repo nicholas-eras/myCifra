@@ -58,6 +58,10 @@ model User {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
+  isAdmin        Boolean  @default(false)
+  canAddSong     Boolean  @default(false)
+  canSyncCifra   Boolean  @default(false)
+
   Song Song[]
 }
 

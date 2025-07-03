@@ -1,64 +1,78 @@
-import { useEffect, useState } from 'react';
-import styles from '../styles/index.module.css';
-import songService from '../service/app.service';
-import Link from 'next/link';
-import ThemeToggle from '../components/ThemeToggle';
+import { useEffect, useState } from "react";
+import styles from "../styles/index.module.css";
+import songService from "../service/app.service";
+import usersService from "../service/users.service";
+import Link from "next/link";
+import ThemeToggle from "../components/ThemeToggle";
 import { FaPen } from "react-icons/fa";
 
 function App() {
   const [songList, setSongList] = useState<any[]>([]);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [canSyncCifra, setCanSyncCifra] = useState(false);
+
   const handleGoogleLogin = async () => {
     try {
-      const backendUrl = process.env.NEXT_PUBLIC_ENVIRONMENT_BACKEND ?? 'http://localhost:3000';
+      const backendUrl = process.env.NEXT_PUBLIC_ENVIRONMENT_BACKEND ?? "http://localhost:3000";
       const res = await fetch(`${backendUrl}/api/auth/google`);
-
-      if (!res.ok) {
-        throw new Error(`Erro HTTP: ${res.status}`);
-      }
-
+      if (!res.ok) throw new Error(`Erro HTTP: ${res.status}`);
       const data = await res.json();
-
-      if (!data?.url) {
-        throw new Error('Resposta inválida do servidor: campo "url" ausente');
-      }
-
+      if (!data?.url) throw new Error('Resposta inválida do servidor');
       window.location.href = data.url;
-
     } catch (err) {
-      const frontendUrl = process.env.NEXT_PUBLIC_ENVIRONMENT_FRONTEND ?? 'http://localhost:3001';
+      const frontendUrl = process.env.NEXT_PUBLIC_ENVIRONMENT_FRONTEND ?? "http://localhost:3001";
       console.error('Erro ao iniciar login com Google:', err);
       window.location.href = frontendUrl;
     }
   };
 
-
   useEffect(() => {
-    const fetchSong = async () => {
+    const fetchData = async () => {
       try {
-        const data = await songService.getAllSong();
-        setSongList(data);
+        const [songsData, userData] = await Promise.all<any>([
+          songService.getAllSong(),
+          usersService.getMe(),
+        ]);
+        setSongList(songsData.songs);
+        setIsAdmin(userData.isAdmin);
+        setCanSyncCifra(userData.canSyncCifra);
       } catch (error) {
-        console.error('Failed to fetch song data:', error);
+        console.error('Erro ao carregar dados:', error);
       }
     };
-    fetchSong();
+    fetchData();
   }, []);
 
   return (
-    <div className={styles['table-container']}>
+    <div className={styles["table-container"]}>
       <div className={styles.headingRow}>
-      <ThemeToggle/>
+        <div style={{ flex: 1 }}>
+          <ThemeToggle />
+        </div>
         <h2 className={styles.heading}>Lista de Músicas</h2>
-        <Link href={`/song`} className={styles.linkHeading}>
-          Criar música
-        </Link>
-      </div>      
+        <div style={{ display: "flex", gap: "1rem", flex: 1, justifyContent: "flex-end" }}>
+          <Link href={`/song`} className={styles.linkHeading}>
+            Criar música
+          </Link>
+          {isAdmin && (
+            <Link href={`/admin/users`} className={styles.linkHeading}>
+              Gerenciar Usuários
+            </Link>
+          )}
+          {canSyncCifra && (
+            <Link href={`/sync-cifra`} className={styles.linkHeading}>
+              Sincronizar CifraClub
+            </Link>
+          )}
+        </div>
+      </div>
+
       <table className={styles.table}>
         <thead>
-          <tr className={styles.tr} style={{width: "100%"}}>
+          <tr className={styles.tr} style={{ width: "100%" }}>
             <th className={styles.th}>Artista</th>
             <th className={styles.th}>Nome</th>
-            <th className={styles.th} style={{width: "15%", textAlign: "center"}}>Editar Letra</th>
+            <th className={styles.th} style={{ width: "15%", textAlign: "center" }}>Editar Letra</th>
           </tr>
         </thead>
         <tbody className={styles.tb}>
@@ -75,29 +89,28 @@ function App() {
                     {song.name}
                   </Link>
                 </td>
-                {
-                  song.createdByUser && 
+                {song.createdByUser && (
                   <td style={{ textAlign: "center" }}>
                     <Link href={`/song/${song.id}`}>
-                      <FaPen/>
-                    </Link>   
+                      <FaPen />
+                    </Link>
                   </td>
-                }
+                )}
               </tr>
             ))
           ) : (
-            <tr className={styles.tr}/>            
+            <tr className={styles.tr} />
           )}
         </tbody>
       </table>
-        <button onClick={handleGoogleLogin} className={styles.googleButton}>
-          <img
-            src="https://www.svgrepo.com/show/475656/google-color.svg"
-            alt="Google"
-            className={styles.googleIcon}
-          />
-          Entrar com Google
-        </button>
+      <button onClick={handleGoogleLogin} className={styles.googleButton}>
+        <img
+          src="https://www.svgrepo.com/show/475656/google-color.svg"
+          alt="Google"
+          className={styles.googleIcon}
+        />
+        Entrar com Google
+      </button>
     </div>
   );
 }
