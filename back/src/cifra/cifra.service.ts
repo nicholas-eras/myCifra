@@ -31,6 +31,7 @@ export class CifraService {
     return { artista, musica };
   }
 
+
   private processCifra(cifra: string[]): Line[] {
     const result: Line[] = [];
     let lineIndex = 0;
@@ -59,23 +60,35 @@ export class CifraService {
       if (isChordLine) {
         const chordLine = line;
         let lyricLine = "";
-        i++;
 
-        // Pegar a próxima linha com letra
-        while (i < cifra.length) {
-          const next = cifra[i].trim();
+        // Checar apenas a próxima linha
+        if (i + 1 < cifra.length) {
+          const nextRaw = cifra[i + 1];
+          const next = nextRaw.trim();
+
+          const nextTokens = next.split(/\s+/);
+          const nextIsChordLine = nextTokens.length > 0 && nextTokens.every(token =>
+            /^[A-G](#|b)?[a-zA-Z0-9/()#b+]*$/.test(token)
+          );
+
           if (
-            next === "" ||
-            next.startsWith("[") ||
-            /^[EADGBe]\|/.test(next)
+            next !== "" &&
+            !next.startsWith("[") &&
+            !/^[EADGBe]\|/.test(next) &&
+            !nextIsChordLine
           ) {
-            i++;
-            continue;
-          } else {
+            // É uma linha de letra vinculada
             lyricLine = next;
+            i += 2; // Avança duas linhas
+          } else {
+            // Linha de acordes sem letra
+            lyricLine = "";
             i++;
-            break;
           }
+        } else {
+          // Última linha
+          lyricLine = "";
+          i++;
         }
 
         if (lyricLine !== "") {
@@ -84,6 +97,14 @@ export class CifraService {
             id: idCounter++,
             lineIndex: lineIndex++,
             text: lyricLine,
+            chords: chordsParsed,
+          });
+        } else {
+          const chordsParsed = this.parseChords(chordLine, " ", idCounter);
+          result.push({
+            id: idCounter++,
+            lineIndex: lineIndex++,
+            text: "",
             chords: chordsParsed,
           });
         }
@@ -106,7 +127,7 @@ export class CifraService {
     const chords: { text: string; start: number }[] = [];
     let i = 0;
 
-    // Extrair acordes com posição de caractere
+    // Extrair acordes com índice de coluna
     while (i < chordLine.length) {
       if (chordLine[i] !== " ") {
         const start = i;
@@ -118,7 +139,7 @@ export class CifraService {
       }
     }
 
-    // Regex para capturar palavras preservando índice
+    // Regex para capturar palavras com índice
     const wordRegex = /\S+/g;
     const words: { word: string; start: number; end: number }[] = [];
     let match: RegExpExecArray | null;
@@ -131,18 +152,30 @@ export class CifraService {
     }
 
     const chordObjs: Chord[] = [];
+
     chords.forEach((chord, idx) => {
+      const chordColumn = chord.start;
       let position = 0;
+
       for (let w = 0; w < words.length; w++) {
-        if (chord.start <= words[w].end) {
+        if (chordColumn >= words[w].start && chordColumn <= words[w].end) {
           position = w;
           break;
         }
+        if (chordColumn < words[w].start) {
+          position = w;
+          break;
+        }
+        position = w;
       }
 
-      const offset =
-        (chord.start - words[position].start) /
-        Math.max(words[position].word.length, 1);
+      let offset = 0;
+      if (position < words.length) {
+        const word = words[position];
+        offset = (chordColumn - word.start) / Math.max(word.word.length, 1);
+      }
+
+      const width = Math.max(chord.text.length, 3);
 
       chordObjs.push({
         id: startId + idx,
@@ -150,10 +183,38 @@ export class CifraService {
         chord: chord.text,
         position,
         offset,
-        width: `${chord.text.length}ch`,
+        width: `${width}ch`,
       });
     });
 
+    return chordObjs;
+  }
+
+  private diferentiateLyricChords(text: string[]){
+    const chordObjs: Chord[] = [];
+    text.forEach((row: string, i: number) => {
+      if (row.startsWith('E|') || row.startsWith("B|") || row.startsWith("G|") || row.startsWith("D|") || row.startsWith("A|")){
+        return;
+      }
+      const words = row.split(" ");
+      const regex = /[a-ln-z]/; // regex: letras de a a l + n a z (exclui 'm')
+
+      words.forEach((word: string) => {
+        if (regex.test(word)){          
+          row = row.replaceAll(word, "");
+        }
+      });      
+
+      chordObjs.push({
+          id: i,
+          lyricId: i,
+          chord: row,
+          position: 0,
+          offset: 0,
+          width: `${row.length}ch`,
+        });
+    });
+ 
     return chordObjs;
   }
 
