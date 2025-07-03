@@ -2,7 +2,7 @@ import { BadRequestException, Body, Controller, Post, Req, UseGuards } from '@ne
 import { CifraService } from './cifra.service';
 import { IpWhitelistGuard } from '../auth/auth.ip-whitelist.guard';
 import { AuthGuard } from '@nestjs/passport';
-import { SongService } from 'src/song/song.service';
+import { SongService } from '../song/song.service';
 import { Request } from 'express';
 import { JwtService } from '@nestjs/jwt';
 
