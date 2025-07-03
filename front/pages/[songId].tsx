@@ -536,234 +536,215 @@ function Song() {
               {block.map((lyric, j) => {
                 return (
                   <div key={`block-${i}-row-${j}`} id={`block-${i}-row-${j}`} className={styles["lyric-container"]}>
-                    {lyric.text === "" ?
-                      j !== 0 ? (
-                        (!isLyricOnly || lyric.chords.length === 0) && (
-                          <div
-                            className={styles["lyric-row"]}
-                            key={`block-${i}-row-${j}-blank`}
-                            onClick={(e) => handleClick(e, lyric.id, i, j, -1, 100)}
-                            style={{
-                              fontSize: `calc(${fontSizeRelativeDiv} * ${fontSize})%`,
-                              display: "flex",
-                              flexWrap: "wrap",
-                              gap: "0 0.5rem",
-                              position: "relative",
-                              width: "100%",
-                              height: "2ch",
-                            }}
-                          >
-                            {!isLyricOnly && lyric.chords.map((chord: any, k: any) => (
-                              <input
-                                key={`block-${i}-row-${j}-${k}`}
-                                style={{
-                                  width: chord.width || "auto",
-                                  marginLeft: `${typeof chord.offset === "string" && chord.offset.includes("px") ? chord.offset : chord.offset + "px"}`,
-                                  background: "transparent",
-                                  border: "none",
-                                  color: "orange",
-                                  fontFamily: "monospace",
-                                  fontWeight: "bold",
-                                  position: "absolute",
-                                  fontSize: `${fontSize}px`,
-                                }}
-                                readOnly
-                                onMouseOver={(e) => {
-                                  e.currentTarget.style.cursor = "pointer";
-                                  e.currentTarget.style.border = "1px solid black";
-                                }}
-                                onMouseOut={(e) => {
-                                  e.currentTarget.style.cursor = "default";
-                                  e.currentTarget.style.border = "none";
-                                }}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  const target = e.currentTarget;
-                                  if (clickTimeout.current) {
-                                    clearTimeout(clickTimeout.current);
-                                    clickTimeout.current = null;
-                                  }
-                                  else{
-                                      clickTimeout.current = setTimeout(() => {
-                                        clickTimeout.current = null;
+                    {(() => {
+                      const hasText = lyric.text.trim() !== "";
+              const hasChords = lyric.chords.length > 0;
 
-                                        e.stopPropagation();
-                                        const rect = target.getBoundingClientRect();
-                                        setVisibleChord({
-                                          chordName: chord.chord,
-                                          x: rect.left,
-                                          y: rect.top,
-                                        });
-                                      }, 250);                         
-                                    }
-                                  }}
-                                onDoubleClick={(e) => {
-                                  if (!canEditChords){
-                                    return
-                                  }
-                                  if (clickTimeout.current) {
-                                    clearTimeout(clickTimeout.current);
-                                    clickTimeout.current = null;
-                                  }
-                                  e.stopPropagation();
-                                  handleDeleteChord(chord.id);
-                                }}
-                                value={chord.chord}
-                              />
-                            ))}
-                          </div>
-                        )
-                      ) : (
-                        <div
-                          className="counter"
+              // Caso: nada para mostrar
+              if (!hasText && !hasChords) {
+                return null;
+              }
+
+              // Caso: só letra
+              if (isLyricOnly) {
+                if (!hasText) {
+                  return null; // Não mostra linha só de acordes
+                }
+                return (
+                  <div
+                    className={styles["lyric-row"]}
+                    style={{
+                      whiteSpace: "pre-wrap",
+                      fontFamily: "monospace",
+                    }}
+                  >
+                    {lyric.text}
+                  </div>
+                );
+              }
+
+              // Caso: só acordes
+              if (!hasText && hasChords) {
+                return (
+                  <div
+                    className={styles["lyric-row"]}
+                    key={`block-${i}-row-${j}-chordsOnly`}
+                    onClick={(e) => handleClick(e, lyric.id, i, j, -1, 100)}
+                    style={{
+                      fontSize: `calc(${fontSizeRelativeDiv} * ${fontSize})%`,
+                      display: "flex",
+                      flexWrap: "wrap",
+                      gap: "0 0.5rem",
+                      position: "relative",
+                      width: "100%",
+                      height: "2ch",
+                    }}
+                  >
+                    {lyric.chords.map((chord: any, k: any) => (
+                      <input
+                        key={`block-${i}-row-${j}-${k}`}
+                        style={{
+                          width: chord.width || "auto",
+                          marginLeft: `${typeof chord.offset === "string" && chord.offset.includes("px") ? chord.offset : chord.offset + "px"}`,
+                          background: "transparent",
+                          border: "none",
+                          color: "orange",
+                          fontFamily: "monospace",
+                          fontWeight: "bold",
+                          position: "absolute",
+                          fontSize: `${fontSize}px`,
+                        }}
+                        readOnly
+                        onMouseOver={(e) => {
+                          e.currentTarget.style.cursor = "pointer";
+                          e.currentTarget.style.border = "1px solid black";
+                        }}
+                        onMouseOut={(e) => {
+                          e.currentTarget.style.cursor = "default";
+                          e.currentTarget.style.border = "none";
+                        }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const target = e.currentTarget;
+                          if (clickTimeout.current) {
+                            clearTimeout(clickTimeout.current);
+                            clickTimeout.current = null;
+                          } else {
+                            clickTimeout.current = setTimeout(() => {
+                              clickTimeout.current = null;
+                              const rect = target.getBoundingClientRect();
+                              setVisibleChord({
+                                chordName: chord.chord,
+                                x: rect.left,
+                                y: rect.top,
+                              });
+                            }, 250);
+                          }
+                        }}
+                        onDoubleClick={(e) => {
+                          if (!canEditChords) return;
+                          if (clickTimeout.current) {
+                            clearTimeout(clickTimeout.current);
+                            clickTimeout.current = null;
+                          }
+                          e.stopPropagation();
+                          handleDeleteChord(chord.id);
+                        }}
+                        value={chord.chord}
+                      />
+                    ))}
+                  </div>
+                );
+              }
+
+              // Caso: letra e possivelmente acordes
+              return (
+                <div
+                  className={styles["lyric-row"]}
+                  style={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    gap: "0 0.5rem",
+                    fontFamily: "monospace",
+                    position: "relative",
+                  }}
+                >
+                  {lyric.text.split(" ").map((word: any, wordIndex: any) => {
+                    const chords = lyric.chords.filter((c: any) => c.position === wordIndex);
+                    const maxExtent = chords.reduce((max: number, chord: any) => {
+                      const extent = parseFloat(chord.width + 1 || 0) + (parseFloat(chord.offset || 0)) * parseFloat(word.length + 1 || 0);
+                      return extent > max ? extent : max;
+                    }, 0);
+                    const spanChordWidth = Math.max(maxExtent, word.length);
+                    return (
+                      <div
+                        key={`block-${i}-row-${j}-word-${wordIndex}`}
+                        style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          alignItems: "flex-start",
+                          position: "relative",
+                        }}
+                        onClick={(e) => handleClick(e, lyric.id, i, j, wordIndex)}
+                      >
+                        <span
                           style={{
-                            position: "absolute",
-                          }}
-                        >
-                          {isOneColumn ? "" : i + 1}
-                        </div>
-                      )
-                      : (
-                        <div
-                          className={styles["lyric-row"]}
-                          id={`block-${i}-row-${j}-extended`}
-                          style={{
-                            display: "flex",
-                            flexWrap: "wrap",
-                            gap: "0 0.5rem",
-                            height: `calc{2 * ${fontSize})px`,
-                            fontFamily: "monospace",
+                            height: `${fontSize}px`,
+                            width: `${spanChordWidth}ch`,
+                            display: "block",
                             position: "relative",
                           }}
                         >
-                          {j === 0 && (
-                            <div
-                              className="counter"
+                          {chords.map((chord: any, chordIndex: any) => (
+                            <input
+                              key={`block-${i}-row-${j}-chord-${wordIndex}-${chordIndex}`}
                               style={{
+                                width: chord.width || "auto",
+                                left: `${chord.offset * word.length}ch`,
+                                background: "transparent",
+                                color: "orange",
+                                border: "1px solid transparent",
+                                fontWeight: "bold",
+                                fontSize: `${fontSize}px`,
+                                fontFamily: "monospace",
+                                top: 0,
                                 position: "absolute",
                               }}
-                            >
-                              {isOneColumn ? "" : i + 1}
-                            </div>
-                          )}
-                          {lyric.text.split(" ").map((word: any, wordIndex: any) => {
-                            const chords = lyric.chords.filter((c: any) => c.position === wordIndex);
-                            const maxExtent = chords.reduce((max: number, chord: any) => {
-                              const extent = parseFloat(chord.width +1|| 0) + (parseFloat(chord.offset || 0))*parseFloat(word.length + 1|| 0);
-                              return extent > max ? extent : max;
-                            }, 0);
-                            const spanChordWidth = Math.max(maxExtent, word.length);
-                            return (
-                              <div
-                                key={`block-${i}-row-${j}-word-${wordIndex}`}
-                                id={`block-${i}-row-${j}-word-${wordIndex}`}
-                                style={{
-                                  display: "flex",
-                                  flexDirection: "column",
-                                  alignItems: "flex-start",
-                                  position: "relative",
-                                }}
-                                onClick={(e) => handleClick(e, lyric.id, i, j, wordIndex)}
-                              >
-                                <span
-                                  style={{
-                                    height: `${fontSize}px`,
-                                    width: `${spanChordWidth}ch`,
-                                    display: "block",
-                                    position: "relative",
-                                  }}
-                                  id={`span-${i}-${j}`}
-                                >
-                                  {!isLyricOnly && chords.map((chord: any, chordIndex: any) => (
-                                    <input
-                                      key={`block-${i}-row-${j}-chord-${wordIndex}-${chordIndex}`}
-                                      style={{
-                                        width: chord.width || "auto",
-                                        left: `${chord.offset * word.length}ch`,
-                                        background: "transparent",
-                                        color: "orange",
-                                        border: "1px solid transparent",
-                                        fontWeight: "bold",
-                                        fontSize: `${fontSize}px`,
-                                        fontFamily: "monospace",
-                                        top: 0,
-                                        position: "absolute",
-                                      }}
-                                      readOnly
-                                      onMouseOver={(e) => {
-                                        e.currentTarget.style.cursor = "pointer";
-                                        e.currentTarget.style.border = "1px solid black";
-                                      }}
-                                      onMouseOut={(e) => {
-                                        e.currentTarget.style.cursor = "default";
-                                        e.currentTarget.style.border = "1px solid transparent";
-                                      }}
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        const target = e.currentTarget;
-                                        if (clickTimeout.current) {
-                                          clearTimeout(clickTimeout.current);
-                                          clickTimeout.current = null;
-                                        }
-                                        else{
-                                          clickTimeout.current = setTimeout(() => {
-                                            clickTimeout.current = null;
-                                            const rect = target.getBoundingClientRect();
-                                            setVisibleChord({
-                                              chordName: chord.chord,
-                                              x: rect.left,
-                                              y: rect.top,
-                                            });
-                                          }, 250);
-                                        }
-                                      }}
-                                      onDoubleClick={(e) => {
-                                        if (!canEditChords){
-                                          return
-                                        }
-                                        if (clickTimeout.current) {
-                                          clearTimeout(clickTimeout.current);
-                                          clickTimeout.current = null;
-                                        }
-                                        e.stopPropagation();
-                                        handleDeleteChord(chord.id);
-                                      }}
-                                      value={chord.chord}
-                                    />
-                                  ))}
-                                  {visibleChord && (
-                                    <div
-                                      ref={popoverRef} // Adiciona a ref aqui
-                                      style={{
-                                        position: 'fixed',
-                                        left: visibleChord.x,
-                                        top: visibleChord.y,
-                                        zIndex: 999,
-                                        background: 'white',
-                                        paddingBottom: '4px',
-                                        border: '1px solid black',
-                                        borderRadius: 4,
-                                      }}
-                                      onClick={(e) => e.stopPropagation()}
-                                    >
-                                      <ChordDiagram chordName={visibleChord.chordName} />
-                                    </div>
-                                  )}
-                                </span>
-                                <span
-                                  style={{
-                                    whiteSpace: "nowrap",
-                                    fontFamily: "monospace",
-                                  }}
-                                >
-                                  {word}
-                                </span>
-                              </div> 
-                            );
-                          })}
-                        </div>
-                      )
-                    }
+                              readOnly
+                              onMouseOver={(e) => {
+                                e.currentTarget.style.cursor = "pointer";
+                                e.currentTarget.style.border = "1px solid black";
+                              }}
+                              onMouseOut={(e) => {
+                                e.currentTarget.style.cursor = "default";
+                                e.currentTarget.style.border = "1px solid transparent";
+                              }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                const target = e.currentTarget;
+                                if (clickTimeout.current) {
+                                  clearTimeout(clickTimeout.current);
+                                  clickTimeout.current = null;
+                                } else {
+                                  clickTimeout.current = setTimeout(() => {
+                                    clickTimeout.current = null;
+                                    const rect = target.getBoundingClientRect();
+                                    setVisibleChord({
+                                      chordName: chord.chord,
+                                      x: rect.left,
+                                      y: rect.top,
+                                    });
+                                  }, 250);
+                                }
+                              }}
+                              onDoubleClick={(e) => {
+                                if (!canEditChords) return;
+                                if (clickTimeout.current) {
+                                  clearTimeout(clickTimeout.current);
+                                  clickTimeout.current = null;
+                                }
+                                e.stopPropagation();
+                                handleDeleteChord(chord.id);
+                              }}
+                              value={chord.chord}
+                            />
+                          ))}
+                        </span>
+                        <span
+                          style={{
+                            whiteSpace: "nowrap",
+                            fontFamily: "monospace",
+                          }}
+                        >
+                          {word}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })()}
+
                   </div>
                 );
               })}
