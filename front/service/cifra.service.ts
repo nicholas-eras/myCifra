@@ -8,7 +8,7 @@ const cifraService = {
       credentials: "include",
       body: JSON.stringify({ url }),
     });
-    if (!res.ok) throw new Error("Erro ao verificar URL");
+    if (!res.ok) console.log("Erro ao verificar URL");
     return res.json();
   },
 
@@ -19,7 +19,7 @@ const cifraService = {
       credentials: "include",
       body: JSON.stringify(data),
     });
-    if (!res.ok) throw new Error("Erro ao salvar cifra");
+    if (!res.ok) console.log("Erro ao salvar cifra");
     return res.json();
   },
 };

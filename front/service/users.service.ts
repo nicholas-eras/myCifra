@@ -8,7 +8,7 @@ const usersService = {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to fetch users");
+        console.log("Failed to fetch users");
       }
 
       const data: any[] = await response.json();
@@ -38,7 +38,7 @@ const usersService = {
       });
 
       if (!response.ok) {
-        throw new Error(`Failed to update user ${userId}`);
+        console.log(`Failed to update user ${userId}`);
       }
 
       const data: any = await response.json();
@@ -53,7 +53,7 @@ const usersService = {
     const res = await fetch(`${API_URL}/users/me`, {
       credentials: "include",
     });
-    if (!res.ok) throw new Error("Não autenticado");
+    if (!res.ok) console.log("Não autenticado");
     return res.json();
   },
 

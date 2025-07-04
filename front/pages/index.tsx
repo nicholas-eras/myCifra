@@ -15,9 +15,9 @@ function App() {
     try {
       const backendUrl = process.env.NEXT_PUBLIC_ENVIRONMENT_BACKEND ?? "http://localhost:3000";
       const res = await fetch(`${backendUrl}/api/auth/google`);
-      if (!res.ok) throw new Error(`Erro HTTP: ${res.status}`);
+      if (!res.ok) console.log(`Erro HTTP: ${res.status}`);
       const data = await res.json();
-      if (!data?.url) throw new Error('Resposta inválida do servidor');
+      if (!data?.url) console.log('Resposta inválida do servidor');
       window.location.href = data.url;
     } catch (err) {
       const frontendUrl = process.env.NEXT_PUBLIC_ENVIRONMENT_FRONTEND ?? "http://localhost:3001";

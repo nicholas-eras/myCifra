@@ -12,7 +12,7 @@ const songService = {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to create song');
+        console.log('Failed to create song');
       }
 
       const data: any = await response.json();
@@ -34,7 +34,7 @@ const songService = {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to create song');
+        console.log('Failed to create song');
       }
 
       const data: any = await response.json();
@@ -50,7 +50,7 @@ const songService = {
       const response = await fetch(`${API_URL}/song`, { credentials: 'include' });
 
       if (!response.ok) {
-        throw new Error('Failed to fetch all song');
+        console.log('Failed to fetch all song');
       }
 
       const data: any[] = await response.json();
@@ -66,7 +66,7 @@ const songService = {
       const response = await fetch(`${API_URL}/song/${id}`, { credentials: 'include' });
 
       if (!response.ok) {
-        throw new Error(`Failed to fetch song with ID ${id}`);
+        console.log(`Failed to fetch song with ID ${id}`);
       }
 
       const data: any = await response.json();
@@ -88,7 +88,7 @@ const songService = {
       });
 
       if (!response.ok) {
-        throw new Error(`Failed to update song with ID ${id}`);
+        console.log(`Failed to update song with ID ${id}`);
       }
 
       const data: any = await response.json();
@@ -106,7 +106,7 @@ const songService = {
       });
 
       if (!response.ok) {
-        throw new Error(`Failed to delete song with ID ${id}`);
+        console.log(`Failed to delete song with ID ${id}`);
       }
     } catch (error) {
       console.error(`Error deleting song with ID ${id}:`, error);

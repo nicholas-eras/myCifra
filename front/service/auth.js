@@ -9,7 +9,7 @@ export async function registerUser(userData) {
     });
 
     if (!response.ok) {
-      throw new Error('Erro ao registrar usuário');
+      console.log('Erro ao registrar usuário');
     }
 
     return await response.json();
@@ -29,7 +29,7 @@ export async function loginUser(credentials) {
     });
 
     if (!response.ok) {
-      throw new Error('Erro ao fazer login');
+      console.log('Erro ao fazer login');
     }
 
     return await response.json();

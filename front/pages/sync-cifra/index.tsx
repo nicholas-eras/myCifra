@@ -20,20 +20,20 @@ export default function SyncCifra() {
       // 1️⃣ Verifica permissões no backend
       const response = await cifraService.verifyCifraUrl(url);
       if (!response || response.error) {
-        throw new Error(response?.error || "Erro ao verificar URL");
+        console.log(response?.error || "Erro ao verificar URL");
       }
 
       // 2️⃣ Extrai artista e música da URL
       const regex = /cifraclub\.com\.br\/([^\/]+)\/([^\/]+)\/?/;
       const match = url.match(regex);
       if (!match) {
-        throw new Error("URL inválida do CifraClub");
+        console.log("URL inválida do CifraClub");
       }
       const artista = encodeURIComponent(match[1]);
       const musica = encodeURIComponent(match[2]);
 
       // 3️⃣ Monta a URL do scraper
-      const scraperUrl = `http://192.168.155.153:3002/artists/${artista}/songs/${musica}`;
+      const scraperUrl = `http://192.168.18.31:3002/artists/${artista}/songs/${musica}`;
 
       // 4️⃣ Abre nova aba com a URL do scraper
       window.open(scraperUrl, "_blank");

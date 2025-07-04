@@ -10,7 +10,7 @@ const checkAuth = async () => {
       }
     });
     if (!response.ok) {
-      throw new Error('Not authenticated');
+      console.log('Not authenticated');
     }
     return true; 
   } catch (error) {
