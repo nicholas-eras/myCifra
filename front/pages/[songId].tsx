@@ -14,9 +14,13 @@ import { HiHashtag } from "react-icons/hi2";
 import ChordDiagram from '../components/ChordDiagram';
 import { IoEyeSharp } from "react-icons/io5";
 
-function Song() {
+function Song({ songId: propSongId }: { songId?: number }) {
   const router = useRouter();
-  const { songId } = router.query;
+  const routerSongId = router.query.songId;
+
+  // Prioriza prop se vier
+  const finalSongId = propSongId ?? (routerSongId ? +routerSongId : undefined);
+
   const [song, setSong] = useState<any | null>(null);
   const [lyricBlocks, setLyricBlocks] = useState<any[][]>([]);
   const [tempChordsCounter, setTempChordsCounter] = useState<number>(0);
@@ -42,10 +46,10 @@ function Song() {
   }
 
   useEffect(() => {
-    if (songId) {
-      fetchSongData(+songId);
+    if (finalSongId) {
+      fetchSongData(+finalSongId);
     }
-  }, [songId]);
+  }, [finalSongId]);
 
   useEffect(() => {
     if (!song || !song.lyrics) { return }

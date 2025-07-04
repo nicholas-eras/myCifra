@@ -99,7 +99,7 @@
 .lyric-block{
   display: flex;
   flex-direction: column;
-  overflow-x: hidden;
+  overflow: hidden;
 }
 
 #medidor {
