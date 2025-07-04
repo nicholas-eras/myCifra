@@ -29,19 +29,26 @@ function App() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [songsData, userData] = await Promise.all<any>([
-          songService.getAllSong(),
-          usersService.getMe(),
-        ]);
+        const songsData:any = await songService.getAllSong();
         setSongList(songsData.songs);
+      } catch (error) {
+        console.error('Erro ao carregar músicas:', error);
+      }
+
+      try {
+        const userData = await usersService.getMe();
         setIsAdmin(userData.isAdmin);
         setCanSyncCifra(userData.canSyncCifra);
       } catch (error) {
-        console.error('Erro ao carregar dados:', error);
+        console.error('Erro ao carregar dados do usuário:', error);
+        setIsAdmin(false);
+        setCanSyncCifra(false);
       }
     };
+
     fetchData();
   }, []);
+
 
   return (
     <div className={styles["table-container"]}>
