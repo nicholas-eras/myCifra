@@ -28,6 +28,7 @@ export default function SyncCifra() {
       const match = url.match(regex);
       if (!match) {
         console.log("URL inválida do CifraClub");
+        return;
       }
       const artista = encodeURIComponent(match[1]);
       const musica = encodeURIComponent(match[2]);
