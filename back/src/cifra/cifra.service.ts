@@ -70,9 +70,19 @@ export class CifraService {
     }
 
     const tokens = line.trim().split(/\s+/);
-    const isChordLine = tokens.length > 0 && tokens.every(token =>
-      /^\(?[A-G](#|b)?[a-zA-Z0-9/+#b()]*\)?$/.test(token)
+    let tokensToTest = tokens;
+
+    // Se linha inteira entre parênteses, remove-os antes de splitar
+    const trimmedLine = line.trim();
+    if (trimmedLine.startsWith("(") && trimmedLine.endsWith(")")) {
+      const insideParens = trimmedLine.slice(1, -1).trim();
+      tokensToTest = insideParens.split(/\s+/);
+    }
+
+    const isChordLine = tokensToTest.length > 0 && tokensToTest.every(token =>
+      /^[A-G](#|b)?[a-zA-Z0-9/()#b+]*$/.test(token)
     );
+
 
     console.log(`Linha ${i}: tokens = ${JSON.stringify(tokens)}, isChordLine=${isChordLine}`);
 
