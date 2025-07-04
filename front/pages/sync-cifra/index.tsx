@@ -34,7 +34,8 @@ export default function SyncCifra() {
       const musica = encodeURIComponent(match[2]);
 
       // 3️⃣ Monta a URL do scraper
-      const scraperUrl = `http://192.168.18.31:3002/artists/${artista}/songs/${musica}`;
+      const scraperHost = process.env.NEXT_PUBLIC_SCRAPER_HOST;
+      const scraperUrl = `${scraperHost}/artists/${artista}/songs/${musica}`;
 
       // 4️⃣ Abre nova aba com a URL do scraper
       window.open(scraperUrl, "_blank");

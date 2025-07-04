@@ -48,6 +48,8 @@ services:
     container_name: frontend
     ports:
       - 3001:3000
+    environment:
+      NEXT_PUBLIC_SCRAPER_HOST: ${CIFRA_SCRAPER_BASE_URL}
     restart: always
     volumes:
       - ./front/:/app/
