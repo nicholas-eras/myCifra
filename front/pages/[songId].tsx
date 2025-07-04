@@ -729,6 +729,24 @@ function Song() {
                               value={chord.chord}
                             />
                           ))}
+                          {visibleChord && (
+                            <div
+                              ref={popoverRef} // Adiciona a ref aqui
+                              style={{
+                                position: 'fixed',
+                                left: visibleChord.x + 50,
+                                top: visibleChord.y - 100,
+                                zIndex: 999,
+                                background: 'white',
+                                padding: 4,
+                                border: '1px solid black',
+                                borderRadius: 4,
+                              }}
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <ChordDiagram chordName={visibleChord.chordName} />
+                            </div>
+                          )}
                         </span>
                         <span
                           style={{
