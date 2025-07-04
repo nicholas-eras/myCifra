@@ -2,7 +2,13 @@ import React from "react";
 import { useTheme } from "./ThemeProvider";
 
 const ThemeToggle = () => {
-  const { theme, toggleTheme } = useTheme();
+  const themeContext = useTheme();
+
+  if (!themeContext) {
+    throw new Error("ThemeToggle must be used within a ThemeProvider");
+  }
+
+  const { theme, toggleTheme } = themeContext;
 
   return (
     <div

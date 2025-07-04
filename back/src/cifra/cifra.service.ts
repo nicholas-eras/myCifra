@@ -71,7 +71,7 @@ export class CifraService {
 
     const tokens = line.trim().split(/\s+/);
     const isChordLine = tokens.length > 0 && tokens.every(token =>
-      /^[A-G](#|b)?[a-zA-Z0-9/()#b+]*$/.test(token)
+      /^\(?[A-G](#|b)?[a-zA-Z0-9/+#b()]*\)?$/.test(token)
     );
 
     console.log(`Linha ${i}: tokens = ${JSON.stringify(tokens)}, isChordLine=${isChordLine}`);
@@ -130,8 +130,6 @@ export class CifraService {
       i++;
     }
   }
-
-
     return result;
   }
 
