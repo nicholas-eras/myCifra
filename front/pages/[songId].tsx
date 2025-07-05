@@ -31,6 +31,7 @@ function Song({ songId: propSongId }: { songId?: number }) {
   const [visibleChord, setVisibleChord] = useState<null | { chordName: string; x: number; y: number }>(null);
   const [canEditChords, setCanEditChords] = useState(false);
   const clickTimeout = useRef<NodeJS.Timeout | null>(null);
+  const appliedTranspose = useRef(false);
 
   const tunes = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
   const tunesBemol = ["C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B"];
@@ -47,6 +48,7 @@ function Song({ songId: propSongId }: { songId?: number }) {
 
   useEffect(() => {
     if (finalSongId) {
+      appliedTranspose.current = false; // resetar sempre que mudar música
       fetchSongData(+finalSongId);
     }
   }, [finalSongId]);
@@ -170,6 +172,48 @@ function Song({ songId: propSongId }: { songId?: number }) {
       }))
     }));
   }, [generalPreference]);
+
+  useEffect(() => {
+    if (!song || appliedTranspose.current) return;
+
+    const stored = localStorage.getItem("songTranspositions");
+    const parsed: Record<string, number> = stored ? JSON.parse(stored) : {};
+    const savedIncrement = parsed[song.songId];
+
+    if (savedIncrement && savedIncrement !== 0) {
+      const absIncrement = Math.abs(savedIncrement);
+      const direction = savedIncrement > 0 ? "+" : "-";
+
+      for (let i = 0; i < absIncrement; i++) {
+        applyTransposition(direction);
+      }
+    }
+
+    // Marca que já aplicou
+    appliedTranspose.current = true;
+  }, [song]);
+
+  const applyTransposition = (direction: string) => {
+    setSong((prevSong: { lyrics: any[] }) => ({
+      ...prevSong,
+      lyrics: prevSong.lyrics?.map((lyric) => ({
+        ...lyric,
+        chords: lyric.chords.map((chordInfo: any) => {
+          const { chord: newChord, width: newWidth } = changeChord(
+            chordInfo.id,
+            chordInfo.chord,
+            direction,
+            chordInfo.width
+          );
+          return {
+            ...chordInfo,
+            chord: newChord,
+            width: newWidth,
+          };
+        }),
+      })),
+    }));
+  };
 
   if (!song) {
     return <div>Loading...</div>;
@@ -295,16 +339,31 @@ function Song({ songId: propSongId }: { songId?: number }) {
   };
 
   const changeTune = (increment: string) => {
-    setSong((prevSong: { lyrics: any[]; }) => ({
+    const stored = localStorage.getItem("songTranspositions");
+    const parsed: Record<string, number> = stored ? JSON.parse(stored) : {};
+
+    const incrementValue = increment === "+" ? 1 : -1;
+
+    const current = parsed[song.songId] ?? 0;
+    parsed[song.songId] = current + incrementValue;
+
+    localStorage.setItem("songTranspositions", JSON.stringify(parsed));
+
+    setSong((prevSong: { lyrics: any[] }) => ({
       ...prevSong,
       lyrics: prevSong.lyrics?.map((lyric) => ({
         ...lyric,
         chords: lyric.chords.map((chordInfo: any) => {
-          const { chord: newChord, width: newWidth } = changeChord(chordInfo.id, chordInfo.chord, increment, chordInfo.width);
+          const { chord: newChord, width: newWidth } = changeChord(
+            chordInfo.id,
+            chordInfo.chord,
+            increment,
+            chordInfo.width
+          );
           return {
             ...chordInfo,
             chord: newChord,
-            width: newWidth
+            width: newWidth,
           };
         }),
       })),
@@ -427,6 +486,22 @@ function Song({ songId: propSongId }: { songId?: number }) {
     };
   };
 
+  const resetTune = () => {
+    const stored = localStorage.getItem("songTranspositions");
+    if (stored) {
+      const parsed: Record<string, number> = JSON.parse(stored);
+      if (parsed[song.songId]) {
+        delete parsed[song.songId];
+        localStorage.setItem("songTranspositions", JSON.stringify(parsed));
+      }
+    }
+
+    // Recarrega a música para restaurar o tom original
+    appliedTranspose.current = false;
+    fetchSongData(song.songId);
+  };
+
+
   return (
     <>
       <div className={styles["cifra-container"]}>
@@ -524,6 +599,7 @@ function Song({ songId: propSongId }: { songId?: number }) {
           <div className={styles["tune"]}>
             <button onClick={() => changeTune("-")}>-</button>
             <button onClick={() => changeTune("+")}>+</button>
+            <button onClick={resetTune}>Tom Original</button>
           </div>
         </div>
         <div className={styles["lyric"]} id='blocksContainer'
