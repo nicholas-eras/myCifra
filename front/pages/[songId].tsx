@@ -718,6 +718,58 @@ function Song({ songId: propSongId }: { songId?: number }) {
                 );
               }
 
+              if (!hasText && !hasChords){
+                return (<div
+                  className={styles["lyric-row"]}
+                  key={`block-${i}-row-${j}-blank`}
+                  onClick={(e) => handleClick(e, lyric.id, i, j, -1, 100)}
+                  style={{
+                    fontSize: `calc(${fontSizeRelativeDiv} * ${fontSize})%`,
+                    display: "flex",
+                    flexWrap: "wrap",
+                    gap: "0 0.5rem",
+                    position: "relative",
+                    width: "100%",
+                    height: "2ch",
+                  }}
+                >
+                  {!isLyricOnly && lyric.chords.map((chord: any, k: any) => (
+                    <input
+                      key={`block-${i}-row-${j}-${k}`}
+                      style={{
+                        width: chord.width || "auto",
+                        marginLeft: `${typeof chord.offset === "string" && chord.offset.includes("px") ? chord.offset : chord.offset + "px"}`,
+                        background: "transparent",
+                        border: "none",
+                        color: "orange",
+                        fontFamily: "monospace",
+                        fontWeight: "bold",
+                        position: "absolute",
+                        fontSize: `${fontSize}px`,
+                      }}
+                      readOnly
+                      onMouseOver={(e) => {
+                        e.currentTarget.style.cursor = "pointer";
+                        e.currentTarget.style.border = "1px solid black";
+                      }}
+                      onMouseOut={(e) => {
+                        e.currentTarget.style.cursor = "default";
+                        e.currentTarget.style.border = "none";
+                      }}
+                      onClick={(e) => {
+                        e.stopPropagation();                    
+                      }}
+                      onDoubleClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteChord(chord.id);
+                      }}
+                      value={chord.chord}
+                    />
+                  ))}
+                </div>
+                )
+              }
+
               // Caso: letra e possivelmente acordes
               return (
                 <div
