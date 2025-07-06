@@ -613,6 +613,7 @@ function Song({ songId: propSongId }: { songId?: number }) {
                 border: isOneColumn ? "none" : "1px solid black"
               }}
             >
+              {!isOneColumn && (<b>{i}</b>)}
               {block.map((lyric, j) => {
                 return (
                   <div key={`block-${i}-row-${j}`} id={`block-${i}-row-${j}`} className={styles["lyric-container"]}>
@@ -621,9 +622,9 @@ function Song({ songId: propSongId }: { songId?: number }) {
               const hasChords = lyric.chords.length > 0;
 
               // Caso: nada para mostrar
-              if (!hasText && !hasChords) {
-                return null;
-              }
+              // if (!hasText && !hasChords) {
+              //   return null;
+              // }
 
               // Caso: só letra
               if (isLyricOnly) {

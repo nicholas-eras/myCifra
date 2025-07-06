@@ -2,12 +2,14 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateSongDto, UpdateSongDto } from './dto/song.dto';
+import { UsersService } from 'src/users/users.service';
+import { User } from '@prisma/client';
 
 @Injectable()
 export class SongService {
   private readonly logger = new Logger(SongService.name);
 
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService, private readonly userService: UsersService) {}
 
   async create(createSongDto: CreateSongDto) {
     const { name, artist, lyrics, createdBy } = createSongDto;
@@ -42,6 +44,11 @@ export class SongService {
         artist: true
       }    
     });
+
+    let user: User;
+    if (userId){
+      user = await this.userService.findbyId(userId);
+    }
     
     return {
       isAdmin: true,
@@ -49,7 +56,7 @@ export class SongService {
         id: song.id,
         name: song.name,
         artist: song.artist,
-        createdByUser: userId ? song.createdBy === userId : false,
+        createdByUser: userId ? song.createdBy === userId || user?.isAdmin: false,
       })
     )};
   }
