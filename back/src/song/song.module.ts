@@ -3,7 +3,7 @@ import { SongService } from './song.service';
 import { SongController } from './song.controller';
 import { PrismaModule } from '../prisma/prisma.module';
 import { JwtService } from '@nestjs/jwt';
-import { UsersService } from 'src/users/users.service';
+import { UsersService } from '..//users/users.service';
 
 @Module({
   imports: [PrismaModule],
