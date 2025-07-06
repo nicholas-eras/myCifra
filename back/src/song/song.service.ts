@@ -56,7 +56,7 @@ export class SongService {
         id: song.id,
         name: song.name,
         artist: song.artist,
-        createdByUser: userId ? song.createdBy === userId || user?.isAdmin: false,
+        createdByUser: userId ? song.createdBy === userId || user?.isAdmin : false,
       })
     )};
   }
@@ -89,17 +89,23 @@ export class SongService {
         }        
       }
     });
-
+ 
     if (!song || !song.lyrics) {
         return song2; // fallback
     }
+
+    let user: User | undefined;
+    if (userId){
+      user = await this.userService.findbyId(userId);
+    }
+
 
     return {
       id: song.id,
       songId: song.songId,
       name: song.lyrics.name,
       artist: song.lyrics.artist,
-      createdByUser: song.song.createdBy === userId,
+      createdByUser: userId ? song.song.createdBy === userId  || user?.isAdmin : false,
       lyrics: song.lyrics.lyrics ?? [],
     };
   }
