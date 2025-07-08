@@ -13,6 +13,9 @@ import { IoMusicalNotes } from "react-icons/io5";
 import { HiHashtag } from "react-icons/hi2";
 import ChordDiagram from '../components/ChordDiagram';
 import { IoEyeSharp } from "react-icons/io5";
+import Metronomo from '../components/Metronomo';
+import { PiMetronomeLight } from "react-icons/pi";
+import { PiMetronomeFill } from "react-icons/pi";
 
 function Song({ songId: propSongId }: { songId?: number }) {
   const router = useRouter();
@@ -30,6 +33,7 @@ function Song({ songId: propSongId }: { songId?: number }) {
   const [generalPreference, setGeneralPreference] = useState<string>("");
   const [visibleChord, setVisibleChord] = useState<null | { chordName: string; x: number; y: number }>(null);
   const [canEditChords, setCanEditChords] = useState(false);
+  const [showMetronomo, setShowMetronomo] = useState(false);
   const clickTimeout = useRef<NodeJS.Timeout | null>(null);
   const appliedTranspose = useRef(false);
 
@@ -501,7 +505,6 @@ function Song({ songId: propSongId }: { songId?: number }) {
     fetchSongData(song.songId);
   };
 
-
   return (
     <>
       <div className={styles["cifra-container"]}>
@@ -580,6 +583,15 @@ function Song({ songId: propSongId }: { songId?: number }) {
                 <IoMusicalNotesOutline onClick={() => setIsLyricOnly(false)} /> :
                 <IoMusicalNotes onClick={() => setIsLyricOnly(true)} />
               }
+              {!showMetronomo ? (
+                <PiMetronomeLight  onClick={() => {
+                    setShowMetronomo(!showMetronomo);
+                }}/>
+              ) : (
+                <PiMetronomeFill  onClick={() => {
+                  setShowMetronomo(!showMetronomo);
+                }} />
+              )}
               <HiHashtag style={{ marginLeft: '8px', marginRight: '4px', border: `${generalPreference == "#" ? 1 : 0}px solid black` }} onClick={() => {
                 setGeneralPreference("#");
               }} />
@@ -903,6 +915,11 @@ function Song({ songId: propSongId }: { songId?: number }) {
           ))}
         </div>
       </div>
+      {showMetronomo && (
+        <div className={styles["metronomo"]}>
+          <Metronomo defaultBpm={120}/>
+        </div>
+      )}
     </>
   );
 }

@@ -24,3 +24,17 @@ body {
   font-size: 16px;
 }
 
+/* The animation code */
+@keyframes start {
+  0% {margin-left: 0%;}
+  50% {margin-left: calc(100% - 40px);}
+  100% {margin-left: 0%;}
+}
+
+@keyframes pulse {
+  0% {opacity: 1;}
+  20% {opacity: 0;}
+  50% {opacity: 1;}
+  70% {opacity: 0;}
+  100% {opacity: 1;}
+}

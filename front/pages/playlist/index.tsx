@@ -1,5 +1,5 @@
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Song from "../[songId]";
 
 export default function PlaylistPlayer() {
@@ -9,6 +9,10 @@ export default function PlaylistPlayer() {
   const [playlist, setPlaylist] = useState<number[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
 
+  // Referências para acumular mudanças
+  const pendingIndex = useRef(0);
+  const debounceTimer = useRef<NodeJS.Timeout | null>(null);
+
   useEffect(() => {
     if (ids) {
       const idArray = (Array.isArray(ids) ? ids[0] : ids)
@@ -17,19 +21,37 @@ export default function PlaylistPlayer() {
         .filter((n) => !isNaN(n));
       setPlaylist(idArray);
       setCurrentIndex(0);
+      pendingIndex.current = 0;
     }
   }, [ids]);
 
+  const updateIndexWithDebounce = (newIndex: number) => {
+    pendingIndex.current = newIndex;
+
+    if (debounceTimer.current) {
+      clearTimeout(debounceTimer.current);
+    }
+
+    debounceTimer.current = setTimeout(() => {
+      setCurrentIndex(pendingIndex.current);
+      debounceTimer.current = null;
+    }, 500);
+  };
+
   const goToPrevious = () => {
-    setCurrentIndex((prev) =>
-      prev === 0 ? playlist.length - 1 : prev - 1
-    );
+    const newIndex =
+      pendingIndex.current === 0
+        ? playlist.length - 1
+        : pendingIndex.current - 1;
+    updateIndexWithDebounce(newIndex);
   };
 
   const goToNext = () => {
-    setCurrentIndex((prev) =>
-      prev === playlist.length - 1 ? 0 : prev + 1
-    );
+    const newIndex =
+      pendingIndex.current === playlist.length - 1
+        ? 0
+        : pendingIndex.current + 1;
+    updateIndexWithDebounce(newIndex);
   };
 
   if (playlist.length === 0) {
@@ -61,7 +83,7 @@ export default function PlaylistPlayer() {
         </button>
 
         <div style={{ fontWeight: "bold" }}>
-          Música {currentIndex + 1} de {playlist.length}
+          Música {pendingIndex.current + 1} de {playlist.length}
         </div>
 
         <button

@@ -109,3 +109,10 @@
   font-size: 16px;
   padding: 5px;
 }
+
+.metronomo {
+  position: fixed;
+  bottom: 1rem;  
+  left: 50%;
+  transform: translateX(-50%);
+}
