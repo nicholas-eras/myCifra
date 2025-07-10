@@ -6,13 +6,17 @@
   background: #f8f9fa;
   border-radius: 12px;
   box-shadow: 0 0 12px rgba(0,0,0,0.1);
-  width: fit-content;
+  width: 100%;
+  box-sizing: border-box;
+  height: 100%; /* faz caber dentro da div metronomo */
+
 }
 
 .controllers {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  width: 100px;
 }
 
 .controllers input {
@@ -38,7 +42,7 @@
 
 .movingArea {
   position: relative;
-  width: 300px;
+  width: 100%;
   height: 50px;
   background-color: #e9ecef;
   border-radius: 8px;

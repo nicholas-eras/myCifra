@@ -111,8 +111,11 @@
 }
 
 .metronomo {
+  width: min(80%, 500px);
+  height: 75px;
   position: fixed;
-  bottom: 1rem;  
+  bottom: 2rem;
   left: 50%;
   transform: translateX(-50%);
+  overflow: hidden; /* força recorte */
 }
