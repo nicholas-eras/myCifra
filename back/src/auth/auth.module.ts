@@ -30,7 +30,7 @@ import { JwtStrategy } from './auth.jwt-strategy';
           privateKey: Buffer.from(privateKey, 'base64'),
           publicKey: Buffer.from(publicKey, 'base64'),
           signOptions: {
-            expiresIn: '1h',
+            expiresIn: '3h',
             algorithm: 'RS256',
           },
           verifyOptions: {

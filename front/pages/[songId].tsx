@@ -640,9 +640,41 @@ function Song({ songId: propSongId }: { songId?: number }) {
 
               // Caso: só letra
               if (isLyricOnly) {
-                if (!hasText) {
-                  return null; // Não mostra linha só de acordes
-                }
+                if (!hasText) { return (
+                   <div
+                    className={styles["lyric-row"]}
+                    key={`block-${i}-row-${j}-blank`}
+                    onClick={(e) => handleClick(e, lyric.id, i, j, -1, 100)}
+                    style={{
+                      fontSize: `calc(${fontSizeRelativeDiv} * ${fontSize})%`,
+                      display: "flex",
+                      flexWrap: "wrap",
+                      gap: "0 0.5rem",
+                      position: "relative",
+                      width: "100%",
+                      height: "2ch",
+                    }}
+                  >
+                    {lyric.chords.map((chord: any, k: any) => {console.log(chord); return (
+                      <input
+                        key={`block-${i}-row-${j}-${k}`}
+                        style={{
+                          width: chord.width || "auto",
+                          marginLeft: `${typeof chord.offset === "string" && chord.offset.includes("px") ? chord.offset : chord.offset + "px"}`,
+                          background: "transparent",
+                          border: "none",
+                          color: "orange",
+                          fontFamily: "monospace",
+                          fontWeight: "bold",
+                          position: "absolute",
+                          fontSize: `${fontSize}px`,
+                        }}
+                        readOnly
+                        value={chord.chord}
+                      />
+                    )})}
+                  </div>
+                  )}                
                 return (
                   <div
                     className={styles["lyric-row"]}
@@ -731,7 +763,8 @@ function Song({ songId: propSongId }: { songId?: number }) {
               }
 
               if (!hasText && !hasChords){
-                return (<div
+                return (
+                <div
                   className={styles["lyric-row"]}
                   key={`block-${i}-row-${j}-blank`}
                   onClick={(e) => handleClick(e, lyric.id, i, j, -1, 100)}
