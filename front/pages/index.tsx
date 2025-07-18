@@ -14,19 +14,9 @@ function App() {
   const [canSyncCifra, setCanSyncCifra] = useState(false);
   const [sortBy, setSortBy] = useState<"artist" | "name" | null>(null);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
-  const sortedSongs = [...songList].sort((a, b) => {
-    if (!sortBy) return 0;
-    const fieldA = a[sortBy].toLowerCase();
-    const fieldB = b[sortBy].toLowerCase();
-    if (fieldA < fieldB) return sortOrder === "asc" ? -1 : 1;
-    if (fieldA > fieldB) return sortOrder === "asc" ? 1 : -1;
-    return 0;
-  });
-
-  const router = useRouter();
-
-  // Playlist salva apenas IDs
+  const [searchTerm, setSearchTerm] = useState("");
   const [playlist, setPlaylist] = useState<number[]>([]);
+  const router = useRouter();
 
   const handleGoogleLogin = async () => {
     try {
@@ -54,7 +44,7 @@ function App() {
 
       try {
         const userData = await usersService.getMe();
-        setCanAddSong(userData.canAddSong)
+        setCanAddSong(userData.canAddSong);
         setIsAdmin(userData.isAdmin);
         setCanSyncCifra(userData.canSyncCifra);
       } catch (error) {
@@ -70,7 +60,6 @@ function App() {
 
   const toggleSort = (field: "artist" | "name") => {
     if (sortBy === field) {
-      // Troca ordem se já está ordenando por esse campo
       setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
     } else {
       setSortBy(field);
@@ -78,28 +67,35 @@ function App() {
     }
   };
 
-
-  // Lida com seleção/deseleção do checkbox
   const handleSelectSong = (id: number) => {
-    setPlaylist((prev) => {
-      if (prev.includes(id)) {
-        // Remove da playlist
-        return prev.filter((songId) => songId !== id);
-      } else {
-        // Adiciona ao final
-        return [...prev, id];
-      }
-    });
+    setPlaylist((prev) =>
+      prev.includes(id) ? prev.filter((songId) => songId !== id) : [...prev, id]
+    );
   };
 
   const handleStartPlaylist = () => {
-  if (playlist.length === 0) {
+    if (playlist.length === 0) {
       alert("Selecione pelo menos uma música.");
       return;
     }
     const queryString = playlist.join(",");
     router.push(`/playlist?ids=${queryString}`);
   };
+
+  // Combina filtro + ordenação
+  const finalSongs = [...songList]
+    .filter((song) =>
+      song.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      song.artist.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+    .sort((a, b) => {
+      if (!sortBy) return 0;
+      const fieldA = a[sortBy].toLowerCase();
+      const fieldB = b[sortBy].toLowerCase();
+      if (fieldA < fieldB) return sortOrder === "asc" ? -1 : 1;
+      if (fieldA > fieldB) return sortOrder === "asc" ? 1 : -1;
+      return 0;
+    });
 
   return (
     <div className={styles["table-container"]}>
@@ -113,7 +109,7 @@ function App() {
             <Link href={`/song`} className={styles.linkHeading}>
               Criar música
             </Link>
-          )}          
+          )}
           {isAdmin && (
             <Link href={`/admin/users`} className={styles.linkHeading}>
               Gerenciar Usuários
@@ -127,22 +123,42 @@ function App() {
         </div>
       </div>
 
+      <div style={{ margin: "1rem 0", display: "flex", justifyContent: "center" }}>
+        <input
+          type="text"
+          placeholder="Buscar por artista ou música..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className={styles.searchInput}
+        />
+      </div>
+
       <table className={styles.table}>
         <thead>
           <tr className={styles.tr} style={{ width: "100%" }}>
             <th className={styles.th}></th>
-            <th className={styles.th} onClick={() => toggleSort("artist")} style={{ cursor: "pointer" }}>
+            <th
+              className={styles.th}
+              onClick={() => toggleSort("artist")}
+              style={{ cursor: "pointer" }}
+            >
               Artista {sortBy === "artist" ? (sortOrder === "asc" ? "↑" : "↓") : ""}
             </th>
-            <th className={styles.th} onClick={() => toggleSort("name")} style={{ cursor: "pointer" }}>
+            <th
+              className={styles.th}
+              onClick={() => toggleSort("name")}
+              style={{ cursor: "pointer" }}
+            >
               Nome {sortBy === "name" ? (sortOrder === "asc" ? "↑" : "↓") : ""}
             </th>
-            <th className={styles.th} style={{ width: "15%", textAlign: "center" }}>Editar Letra</th>
+            <th className={styles.th} style={{ width: "15%", textAlign: "center" }}>
+              Editar Letra
+            </th>
           </tr>
         </thead>
         <tbody className={styles.tb}>
-          {songList.length > 0 ? (
-            sortedSongs.map((song) => (
+          {finalSongs.length > 0 ? (
+            finalSongs.map((song) => (
               <tr key={song.id} className={styles.tr}>
                 <td className={styles.td}>
                   <input
@@ -171,7 +187,11 @@ function App() {
               </tr>
             ))
           ) : (
-            <tr className={styles.tr} />
+            <tr className={styles.tr}>
+              <td colSpan={4} style={{ textAlign: "center", padding: "1rem" }}>
+                Nenhuma música encontrada.
+              </td>
+            </tr>
           )}
         </tbody>
       </table>

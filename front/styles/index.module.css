@@ -140,3 +140,13 @@
   font-size: 1rem;
   cursor: pointer;
 }
+
+.searchInput {
+  padding: 0.5rem;
+  width: 100%;
+  max-width: 400px;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
