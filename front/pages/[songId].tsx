@@ -16,6 +16,7 @@ import { IoEyeSharp } from "react-icons/io5";
 import Metronomo from '../components/Metronomo';
 import { PiMetronomeLight } from "react-icons/pi";
 import { PiMetronomeFill } from "react-icons/pi";
+import usersService from "../service/users.service";
 
 function Song({ songId: propSongId }: { songId?: number }) {
   const router = useRouter();
@@ -34,6 +35,8 @@ function Song({ songId: propSongId }: { songId?: number }) {
   const [visibleChord, setVisibleChord] = useState<null | { chordName: string; x: number; y: number }>(null);
   const [canEditChords, setCanEditChords] = useState(false);
   const [showMetronomo, setShowMetronomo] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+
   const clickTimeout = useRef<NodeJS.Timeout | null>(null);
   const appliedTranspose = useRef(false);
 
@@ -49,6 +52,19 @@ function Song({ songId: propSongId }: { songId?: number }) {
     const data = await songService.getSongById(id);
     setSong(data);
   }
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const userData = await usersService.getMe();
+        setIsAdmin(userData.isAdmin);
+      } catch (error) {
+        console.error('Erro ao carregar dados do usuário:', error);
+        setIsAdmin(false);
+      }
+    };
+    fetchData();
+  }, []);
 
   useEffect(() => {
     if (finalSongId) {
@@ -515,7 +531,7 @@ function Song({ songId: propSongId }: { songId?: number }) {
           </div>
           <div className={styles["action"]}>
             {
-              song.createdByUser &&               
+              (song.createdByUser || isAdmin) &&               
               <button
                 onClick={handleUpdateSong}
                 style={{

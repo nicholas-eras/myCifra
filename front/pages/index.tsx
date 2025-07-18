@@ -9,8 +9,20 @@ import { useRouter } from "next/router";
 
 function App() {
   const [songList, setSongList] = useState<any[]>([]);
+  const [canAddSong, setCanAddSong] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [canSyncCifra, setCanSyncCifra] = useState(false);
+  const [sortBy, setSortBy] = useState<"artist" | "name" | null>(null);
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+  const sortedSongs = [...songList].sort((a, b) => {
+    if (!sortBy) return 0;
+    const fieldA = a[sortBy].toLowerCase();
+    const fieldB = b[sortBy].toLowerCase();
+    if (fieldA < fieldB) return sortOrder === "asc" ? -1 : 1;
+    if (fieldA > fieldB) return sortOrder === "asc" ? 1 : -1;
+    return 0;
+  });
+
   const router = useRouter();
 
   // Playlist salva apenas IDs
@@ -42,17 +54,30 @@ function App() {
 
       try {
         const userData = await usersService.getMe();
+        setCanAddSong(userData.canAddSong)
         setIsAdmin(userData.isAdmin);
         setCanSyncCifra(userData.canSyncCifra);
       } catch (error) {
         console.error('Erro ao carregar dados do usuário:', error);
         setIsAdmin(false);
         setCanSyncCifra(false);
+        setCanAddSong(false);
       }
     };
 
     fetchData();
   }, []);
+
+  const toggleSort = (field: "artist" | "name") => {
+    if (sortBy === field) {
+      // Troca ordem se já está ordenando por esse campo
+      setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
+    } else {
+      setSortBy(field);
+      setSortOrder("asc");
+    }
+  };
+
 
   // Lida com seleção/deseleção do checkbox
   const handleSelectSong = (id: number) => {
@@ -84,9 +109,11 @@ function App() {
         </div>
         <h2 className={styles.heading}>Lista de Músicas</h2>
         <div style={{ display: "flex", gap: "1rem", flex: 1, justifyContent: "flex-end" }}>
-          <Link href={`/song`} className={styles.linkHeading}>
-            Criar música
-          </Link>
+          {canAddSong && (
+            <Link href={`/song`} className={styles.linkHeading}>
+              Criar música
+            </Link>
+          )}          
           {isAdmin && (
             <Link href={`/admin/users`} className={styles.linkHeading}>
               Gerenciar Usuários
@@ -104,14 +131,18 @@ function App() {
         <thead>
           <tr className={styles.tr} style={{ width: "100%" }}>
             <th className={styles.th}></th>
-            <th className={styles.th}>Artista</th>
-            <th className={styles.th}>Nome</th>
+            <th className={styles.th} onClick={() => toggleSort("artist")} style={{ cursor: "pointer" }}>
+              Artista {sortBy === "artist" ? (sortOrder === "asc" ? "↑" : "↓") : ""}
+            </th>
+            <th className={styles.th} onClick={() => toggleSort("name")} style={{ cursor: "pointer" }}>
+              Nome {sortBy === "name" ? (sortOrder === "asc" ? "↑" : "↓") : ""}
+            </th>
             <th className={styles.th} style={{ width: "15%", textAlign: "center" }}>Editar Letra</th>
           </tr>
         </thead>
         <tbody className={styles.tb}>
           {songList.length > 0 ? (
-            songList.map((song) => (
+            sortedSongs.map((song) => (
               <tr key={song.id} className={styles.tr}>
                 <td className={styles.td}>
                   <input
@@ -130,7 +161,7 @@ function App() {
                     {song.name}
                   </Link>
                 </td>
-                {song.createdByUser && (
+                {(song.createdByUser || isAdmin) && (
                   <td style={{ textAlign: "center" }}>
                     <Link href={`/song/${song.id}`}>
                       <FaPen />
