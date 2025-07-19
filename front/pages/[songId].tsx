@@ -50,8 +50,19 @@ function Song({ songId: propSongId }: { songId?: number }) {
 
   const fetchSongData = async (id: number) => {
     const data = await songService.getSongById(id);
-    setSong(data);
-  }
+
+    const normalizedLyrics = data.lyrics.map((lyric: any) => ({
+      ...lyric,
+      chords: lyric.chords.map((chord: any) => ({
+        ...chord,
+        idOriginal: chord.id,
+        id: `${lyric.id}-${chord.id}`, // apenas para o front, pois da bug na hora de excluir
+      })),
+    }));
+
+    setSong({ ...data, lyrics: normalizedLyrics });
+  };
+
 
   useEffect(() => {
     const fetchData = async () => {
@@ -274,7 +285,7 @@ function Song({ songId: propSongId }: { songId?: number }) {
     element.style.fontSize = `${fontSizeRelativeDiv}%`;
 
     setTempChordsCounter(tempChordsCounter + 1);
-    const chordTempId = -1 * parseInt(`${blockId}${rowId}${tempChordsCounter}`);
+    const chordTempId = Date.now() + Math.floor(Math.random() * 1000); // ID único
 
     element.addEventListener('blur', () => {
 
@@ -286,6 +297,7 @@ function Song({ songId: propSongId }: { songId?: number }) {
       const newChord: any = {
         id: chordTempId,
         lyricId: lyricId,
+        idOriginal: null,
         chord: element.value,
         width: element.style.width,
         offset: +wordIndex === -1 ? element.style.marginLeft : parseFloat(element.style.marginLeft.replace("%", "")) / 100,
@@ -328,7 +340,7 @@ function Song({ songId: propSongId }: { songId?: number }) {
     element.focus();
   };
 
-  const handleDeleteChord = (chordId: number) => {
+  const handleDeleteChord = (chordId: string | number) => {
     setSong((prevSong: any) => {
       const newSong = {
         ...prevSong,
@@ -343,10 +355,17 @@ function Song({ songId: propSongId }: { songId?: number }) {
 
   const handleUpdateSong = async () => {
     if (!song) return;
+
     const payload = {
       name: song.name,
       artist: song.artist,
-      lyrics: lyricBlocks.flat()
+      lyrics: song.lyrics.map((lyric: any) => ({
+        ...lyric,
+        chords: lyric.chords.map(({ idOriginal, ...chord }: any) => ({
+          ...chord,
+          id: idOriginal, // usa o ID original do backend
+        }))
+      }))
     };
 
     try {
@@ -357,6 +376,7 @@ function Song({ songId: propSongId }: { songId?: number }) {
       alert('Erro ao atualizar música');
     }
   };
+
 
   const changeTune = (increment: string) => {
     const stored = localStorage.getItem("songTranspositions");
