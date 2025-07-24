@@ -2,9 +2,11 @@
   "name": "MyCifra",
   "short_name": "Cifras",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "theme_color": "#000000",
   "background_color": "#ffffff",
+  "handle_links": "preferred",
   "icons": [
     {
       "src": "/icons/manifest-icon-192.maskable.png",
@@ -41,7 +43,7 @@
     {
       "src": "/mycifrahome.png",
       "sizes": "540x720",
-      "type": "image/png"     
+      "type": "image/png"
     }
   ]
 }

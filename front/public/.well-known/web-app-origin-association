@@ -1,0 +1,10 @@
+{
+  "web_apps": [
+    {
+      "manifest": "https://my-cifra.vercel.app/manifest.json",
+      "details": {
+        "paths": ["/*"]
+      }
+    }
+  ]
+}
