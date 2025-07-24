@@ -25,9 +25,18 @@ export async function getDb() {
 // SONGS: músicas completas
 // ---------------------------
 
-export async function saveSongOffline(song: any) {
+export async function saveSongOffline(songs: any | any[]) {
   const db = await getDb();
-  await db.put(SONGS_STORE, song);
+
+  if (Array.isArray(songs)) {
+    const tx = db.transaction(SONGS_STORE, 'readwrite');
+    for (const song of songs) {
+      tx.store.put(song);
+    }
+    await tx.done;
+  } else {
+    await db.put(SONGS_STORE, songs);
+  }
 }
 
 export async function getOfflineSongs(): Promise<any[]> {

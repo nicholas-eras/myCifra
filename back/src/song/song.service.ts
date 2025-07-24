@@ -113,6 +113,34 @@ export class SongService {
     };
   }
 
+  async findAllWithLyrics(userId: string | null) {
+    const songs:any = await this.prisma.songText.findMany({      
+      include:{
+        song: true
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
+    let user: User;
+    if (userId){
+      user = await this.userService.findbyId(userId);
+    }
+    
+    return {
+      isAdmin: user! ? user?.isAdmin : false,
+      songs :songs.map(song => ({
+        id: song.id,
+        name: song.lyrics.name,
+        artist: song.lyrics.artist,
+        createdByUser: userId ? song.createdBy === userId || user?.isAdmin : false,
+        lyrics: song.lyrics.lyrics,
+        songId: song.songId
+      })
+    )};
+  }
+
   async update(id: number, newSongDto: UpdateSongDto) {    
     // const song = await this.prisma.song.update({
     //   where:{

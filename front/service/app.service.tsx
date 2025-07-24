@@ -76,6 +76,25 @@ const songService = {
     }
   },
 
+  async getAllSongsWithLyrics(): Promise<AllSongResponse | null> {
+    try {
+      const response = await fetch(`${API_URL}/song/withLyrics`, {
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        const errorJson = await response.json();
+        console.warn("Erro ao buscar músicas:", errorJson);
+        return null; 
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('❌ Falha no getAllSong:', error);
+      return null;
+    }
+  },
+
   async getSongById(id: number): Promise<any> {
     try {
       const response = await fetch(`${API_URL}/song/${id}`, { credentials: 'include' });

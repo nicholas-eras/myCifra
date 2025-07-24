@@ -121,9 +121,9 @@ function App() {
   };
 
   async function baixarMusica() {
-    const song = await songService.getSongById(playlist[0]);
-    await saveSongOffline(song);
-    alert('Música salva para uso offline!');
+    const songs = await songService.getAllSongsWithLyrics();    
+    await saveSongOffline(songs!.songs);
+    alert('Músicas salvas para uso offline!');
   }
 
   // Combina filtro + ordenação
@@ -255,7 +255,7 @@ function App() {
         <button onClick={handleStartPlaylist} className={styles.startButton}>
           Iniciar Playlist
         </button>
-      <button onClick={baixarMusica} className={styles.startButton} disabled={playlist.length == 0} style={{cursor: playlist.length == 0 ? "not-allowed" : 'pointer'}}>
+        <button onClick={baixarMusica} className={styles.startButton}>
           Baixar Músiscas
         </button>
         <button onClick={handleGoogleLogin} className={styles.googleButton}>
