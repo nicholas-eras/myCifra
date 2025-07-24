@@ -10,7 +10,9 @@
   },
   "dependencies": {
     "chord-fingering": "^1.0.2",
+    "idb": "^8.0.3",
     "next": "15.2.1",
+    "next-pwa": "^5.6.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-icons": "^5.5.0"

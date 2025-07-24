@@ -1,3 +1,15 @@
+type SongSummary = {
+  id: number;
+  name: string;
+  artist: string;
+  createdByUser: boolean;
+};
+
+type AllSongResponse = {
+  isAdmin: boolean;
+  songs: SongSummary[];
+};
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
 
 const songService = {
@@ -45,35 +57,38 @@ const songService = {
     }
   },
 
-  async getAllSong(): Promise<any[]> {
+  async getAllSong(): Promise<AllSongResponse | null> {
     try {
-      const response = await fetch(`${API_URL}/song`, { credentials: 'include' });
+      const response = await fetch(`${API_URL}/song`, {
+        credentials: 'include',
+      });
 
       if (!response.ok) {
-        console.log('Failed to fetch all song');
+        const errorJson = await response.json();
+        console.warn("Erro ao buscar músicas:", errorJson);
+        return null; 
       }
 
-      const data: any[] = await response.json();
-      return data;
+      return await response.json();
     } catch (error) {
-      console.error('Error fetching all song:', error);
-      throw error;
+      console.error('❌ Falha no getAllSong:', error);
+      return null;
     }
   },
 
   async getSongById(id: number): Promise<any> {
     try {
       const response = await fetch(`${API_URL}/song/${id}`, { credentials: 'include' });
-
       if (!response.ok) {
         console.log(`Failed to fetch song with ID ${id}`);
+        return null;
       }
 
       const data: any = await response.json();
       return data;
     } catch (error) {
       console.error(`Error fetching song with ID ${id}:`, error);
-      throw error;
+      return null;
     }
   },
 

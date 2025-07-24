@@ -1,5 +1,5 @@
 // song.service.ts
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateSongDto, UpdateSongDto } from './dto/song.dto';
 import { UsersService } from '../users/users.service';
@@ -51,7 +51,7 @@ export class SongService {
     }
     
     return {
-      isAdmin: true,
+      isAdmin: user! ? user?.isAdmin : false,
       songs :songs.map(song => ({
         id: song.id,
         name: song.name,
@@ -90,6 +90,10 @@ export class SongService {
       }
     });
  
+    if (!song && !song2){
+      throw new NotFoundException("Música não encontrada");
+    }
+
     if (!song || !song.lyrics) {
         return song2; // fallback
     }
@@ -98,7 +102,6 @@ export class SongService {
     if (userId){
       user = await this.userService.findbyId(userId);
     }
-
 
     return {
       id: song.id,

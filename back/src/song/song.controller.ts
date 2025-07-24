@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, ParseIntPipe, Req } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, ParseIntPipe, Req, BadRequestException } from '@nestjs/common';
 import { SongService } from './song.service';
 import { CreateSongDto, UpdateSongDto } from './dto/song.dto';
 import { JwtService } from '@nestjs/jwt';
@@ -32,8 +32,8 @@ export class SongController {
         userId = null;
       }
     }
-
-    return this.songService.findAll(userId);
+    
+    return await this.songService.findAll(userId);
   }
 
   @Get(':id')
@@ -52,6 +52,7 @@ export class SongController {
         userId = null;
       }
     }
+
     return this.songService.findOne(+id, userId);
   }
 

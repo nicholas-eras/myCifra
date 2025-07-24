@@ -17,6 +17,7 @@ import Metronomo from '../components/Metronomo';
 import { PiMetronomeLight } from "react-icons/pi";
 import { PiMetronomeFill } from "react-icons/pi";
 import usersService from "../service/users.service";
+import { getOfflineSong, saveSongOffline } from '../service/indexedDb';
 
 function Song({ songId: propSongId }: { songId?: number }) {
   const router = useRouter();
@@ -49,8 +50,24 @@ function Song({ songId: propSongId }: { songId?: number }) {
   const numRowsPerColumn = 20;
 
   const fetchSongData = async (id: number) => {
-    const data = await songService.getSongById(id);
+    let data;
 
+    if (navigator.onLine) {
+      try {
+        data = await songService.getSongById(id);
+        // await saveSongOffline(data);
+      } catch (error) {
+        console.warn("Erro ao buscar online. Tentando offline...");
+        data = await getOfflineSong(id);
+      }
+    } else {
+      data = await getOfflineSong(id);
+    }
+
+    if (!data) {
+      console.error("Música não encontrada nem online nem offline.");
+      return;
+    }
     const normalizedLyrics = data.lyrics.map((lyric: any) => ({
       ...lyric,
       chords: lyric.chords.map((chord: any) => ({
@@ -247,7 +264,23 @@ function Song({ songId: propSongId }: { songId?: number }) {
   };
 
   if (!song) {
-    return <div>Loading...</div>;
+    return (
+      <>
+        <Link href="/">
+          <button style={{
+            padding: '5px 10px',
+            backgroundColor: 'red',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+          }}>
+            Voltar
+          </button>
+        </Link>
+        Loading...
+      </>
+    );
   }
 
   const handleClick = (

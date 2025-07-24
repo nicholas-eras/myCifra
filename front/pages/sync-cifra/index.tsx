@@ -57,7 +57,6 @@ export default function SyncCifra() {
 
     try {
       const parsed = JSON.parse(cifraJson);
-      // Aqui você chama seu serviço para salvar a música
       await cifraService.saveParsedCifra(parsed);
 
       alert("Cifra salva com sucesso!");

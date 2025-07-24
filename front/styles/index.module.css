@@ -106,8 +106,6 @@
 }
 
 .googleButton {
-  width: 20%;
-  margin: 1rem auto 0 auto;
   background-color: white;
   border: 1px solid #D1D5DB;
   color: #1E293B;
@@ -131,7 +129,7 @@
 }
 
 .startButton {
-  position: absolute;
+  position: relative;
   padding: 0.5rem 1rem;
   background-color: #4CAF50;
   color: white;

@@ -6,6 +6,7 @@ import Link from "next/link";
 import ThemeToggle from "../components/ThemeToggle";
 import { FaPen } from "react-icons/fa";
 import { useRouter } from "next/router";
+import { saveSongOffline, getOfflineSongs, saveUserPermissionsAndSongs, getUserPermissionsAndSongs } from '../service/indexedDb';
 
 function App() {
   const [songList, setSongList] = useState<any[]>([]);
@@ -35,28 +36,65 @@ function App() {
 
   useEffect(() => {
     const fetchData = async () => {
-      try {
-        const songsData: any = await songService.getAllSong();
-        setSongList(songsData.songs);
-      } catch (error) {
-        console.error('Erro ao carregar músicas:', error);
+      // 👇 se offline, pula direto pro IndexedDB
+      if (!navigator.onLine) {
+        console.warn("Sem internet, carregando dados offline...");
+        const offlineData = await getUserPermissionsAndSongs();
+        if (offlineData) {
+          setSongList(offlineData.songs || []);
+          setIsAdmin(offlineData.isAdmin || false);
+          setCanAddSong(offlineData.canAddSong || false);
+          setCanSyncCifra(offlineData.canSyncCifra || false);
+        } else {
+          console.error("Sem dados offline disponíveis.");
+          setSongList([]);
+          setIsAdmin(false);
+          setCanAddSong(false);
+          setCanSyncCifra(false);
+        }
+        return;
       }
 
       try {
-        const userData = await usersService.getMe();
+        const [songsData, userData] = await Promise.all([
+          songService.getAllSong(),
+          usersService.getMe(),
+        ]);
+
+        setSongList(songsData!.songs);
         setCanAddSong(userData.canAddSong);
         setIsAdmin(userData.isAdmin);
         setCanSyncCifra(userData.canSyncCifra);
+
+        await saveUserPermissionsAndSongs({
+          songs: songsData!.songs,
+          isAdmin: userData.isAdmin,
+          canAddSong: userData.canAddSong,
+          canSyncCifra: userData.canSyncCifra,
+        });
       } catch (error) {
-        console.error('Erro ao carregar dados do usuário:', error);
-        setIsAdmin(false);
-        setCanSyncCifra(false);
-        setCanAddSong(false);
+        console.warn("Erro inesperado:", error);
+        // Se der erro mesmo online, ainda tenta offline
+        const offlineData = await getUserPermissionsAndSongs();
+        if (offlineData) {
+          setSongList(offlineData.songs || []);
+          setIsAdmin(offlineData.isAdmin || false);
+          setCanAddSong(offlineData.canAddSong || false);
+          setCanSyncCifra(offlineData.canSyncCifra || false);
+        }
+        else{
+          setSongList([]);
+          setIsAdmin(false);
+          setCanAddSong(false);
+          setCanSyncCifra(canSyncCifra || false);
+        }
       }
     };
 
     fetchData();
   }, []);
+
+
 
   const toggleSort = (field: "artist" | "name") => {
     if (sortBy === field) {
@@ -81,6 +119,12 @@ function App() {
     const queryString = playlist.join(",");
     router.push(`/playlist?ids=${queryString}`);
   };
+
+  async function baixarMusica() {
+    const song = await songService.getSongById(playlist[0]);
+    await saveSongOffline(song);
+    alert('Música salva para uso offline!');
+  }
 
   // Combina filtro + ordenação
   const finalSongs = [...songList]
@@ -207,20 +251,22 @@ function App() {
           .join(", ")}
       </div>
 
-      <div style={{ marginTop: "1rem" }}>
+      <div style={{ marginTop: "1rem", display: "flex", justifyContent: 'center', gap: '2rem' }}>
         <button onClick={handleStartPlaylist} className={styles.startButton}>
           Iniciar Playlist
         </button>
+      <button onClick={baixarMusica} className={styles.startButton} disabled={playlist.length == 0} style={{cursor: playlist.length == 0 ? "not-allowed" : 'pointer'}}>
+          Baixar Músiscas
+        </button>
+        <button onClick={handleGoogleLogin} className={styles.googleButton}>
+          <img
+            src="https://www.svgrepo.com/show/475656/google-color.svg"
+            alt="Google"
+            className={styles.googleIcon}
+          />
+          Entrar com Google
+        </button>
       </div>
-
-      <button onClick={handleGoogleLogin} className={styles.googleButton}>
-        <img
-          src="https://www.svgrepo.com/show/475656/google-color.svg"
-          alt="Google"
-          className={styles.googleIcon}
-        />
-        Entrar com Google
-      </button>
     </div>
   );
 }

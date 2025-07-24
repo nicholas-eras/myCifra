@@ -37,7 +37,23 @@ const AuthRequired = (WrappedComponent) => {
     }, [router]);
 
     if (isLoading) {
-      return <div>Loading...</div>;
+      return (
+      <>
+        <Link href="/">
+          <button style={{
+            padding: '5px 10px',
+            backgroundColor: 'red',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+          }}>
+            Voltar
+          </button>
+        </Link>
+        Loading...
+      </>
+    )
     }
 
     return isAuthenticated ? <WrappedComponent {...props} /> : null;

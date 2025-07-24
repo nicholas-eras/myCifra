@@ -9,7 +9,7 @@ async function bootstrap() {
   expressApp.set('trust proxy', true);
 
   app.enableCors({
-    origin: process.env.ENVIRONMENT_FRONTEND ?? 'http://localhost:3001',
+    origin: [process.env.ENVIRONMENT_FRONTEND ?? 'http://localhost:3001', 'http://localhost:3002'],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     allowedHeaders: ['Origin', 'Content-Type', 'Accept'],
     credentials: true,
