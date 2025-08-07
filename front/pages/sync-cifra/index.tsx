@@ -97,7 +97,7 @@ export default function SyncCifra() {
         onClick={handleSync}
         disabled={loading}
         style={{
-          backgroundColor: "#4CAF50",
+          backgroundColor: "#265B53",
           color: "white",
           border: "none",
           padding: "0.5rem 1rem",

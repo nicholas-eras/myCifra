@@ -11,6 +11,7 @@
   "dependencies": {
     "chord-fingering": "^1.0.2",
     "idb": "^8.0.3",
+    "lucide-react": "^0.536.0",
     "next": "15.2.1",
     "next-pwa": "^5.6.0",
     "react": "^19.0.0",

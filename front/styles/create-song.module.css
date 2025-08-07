@@ -8,8 +8,7 @@
 }
 
 [data-theme="dark"] .table-container {
-  background-color: #1e1e1e;
-  box-shadow: 0 4px 10px rgba(255, 255, 255, 0.1);
+  background-color: black;
 }
 [data-theme="dark"] .campos label {
   color: #fff;  
@@ -31,7 +30,7 @@
 }
 
 .lyric > .headingRow > .heading {
-  background-color: #4CAF50;
+  background-color: #265B53;
   border: none;
   border-radius: .5rem;
   padding: .5rem;
@@ -58,7 +57,7 @@
   font-size: 24px;
   font-weight: bold;
   color: white;
-  background-color: #4CAF50;
+  background-color: #265B53;
   border: 1px solid black;
   border-bottom: 0px;
 }
@@ -97,7 +96,7 @@
 }
 
 .campo input:focus {
-  border-color: #4CAF50;
+  border-color: #265B53;
   outline: none;
   box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
 }

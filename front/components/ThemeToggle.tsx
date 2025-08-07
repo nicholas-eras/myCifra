@@ -1,40 +1,29 @@
-import React from "react";
-import { useTheme } from "./ThemeProvider";
+import React from 'react';
+import { useTheme } from './ThemeProvider'; // ajuste o caminho se necessário
+import { Moon, Sun } from 'lucide-react';
+import styles from '../styles/theme-toggle.module.css';
 
 const ThemeToggle = () => {
   const themeContext = useTheme();
-
-  if (!themeContext) {
-    throw new Error("ThemeToggle must be used within a ThemeProvider");
-  }
+  if (!themeContext) throw new Error("ThemeToggle must be used within a ThemeProvider");
 
   const { theme, toggleTheme } = themeContext;
+  const isDark = theme === 'dark';
 
   return (
-    <div
-      style={{
-        position: "absolute",
-        width: "40px",
-        height: "20px",
-        border: "1px solid black",
-        borderRadius: "1em",
-        backgroundColor: theme === "light" ? "lightblue" : "black",
-        cursor: "pointer"
-      }}
-      onClick={toggleTheme}
-    >
-      <div
-        style={{
-          position: "relative",
-          width: "19px",
-          height: "19px",
-          border: "1px solid black",
-          borderRadius: "1em",
-          transform: theme === "light" ? "translateX(0)" : "translateX(20px)",
-          transition: "transform 0.3s ease-in-out",
-          backgroundColor: theme === "light" ? "yellow" : "darkblue",
-        }}
-      />
+    <div className={styles.themeToggle} onClick={toggleTheme}>
+      <div className={styles.toggleTrack}>
+        <div
+          className={styles.toggleThumb}
+          style={{ transform: isDark ? 'translateX(31px)' : 'translateX(0)' }}
+        />
+        <div className={`${styles.icon} ${styles.leftIcon}`}>
+          <Moon size={18} className={isDark ? styles.invisible : styles.visible} />
+        </div>
+        <div className={`${styles.icon} ${styles.rightIcon}`} style={{ color: isDark ? 'black' : 'white' }}>
+          <Sun size={18} className={isDark ? styles.visible : styles.invisible} />
+        </div>
+      </div>
     </div>
   );
 };
