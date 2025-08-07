@@ -211,16 +211,7 @@ function App() {
           }
         </div>
         
-        {/* <div style={{ marginTop: "1rem", display: "flex", justifyContent: 'center', gap: '2rem' }}>
-          <button onClick={handleStartPlaylist} className={styles.startButton}>
-            <span className={styles.iconCircle}>
-              <FaPlus className={styles.icon} />
-            </span>
-            INICIAR A PLAYLIST
-          </button>
-          <button onClick={baixarMusica} className={styles.startButton}>
-            Baixar Músiscas
-          </button>
+        <div style={{ marginTop: "1rem", display: "flex", justifyContent: 'center', gap: '2rem' }}>
           <button onClick={handleGoogleLogin} className={styles.googleButton}>
             <img
               src="https://www.svgrepo.com/show/475656/google-color.svg"
@@ -229,7 +220,7 @@ function App() {
             />
             Entrar com Google
           </button>
-        </div> */}
+        </div>
       </div>
       <div className={`${styles.startButtonWrapper} ${playlist.length > 0 ? styles.visible : ""}`}>
         {playlist.length > 0 && (
