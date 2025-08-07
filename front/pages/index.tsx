@@ -212,6 +212,22 @@ function App() {
         </div>
         
         <div style={{ marginTop: "1rem", display: "flex", justifyContent: 'center', gap: '2rem' }}>
+          
+          {canAddSong && (
+            <Link href={`/song`} className={styles.linkHeading}>
+              Criar música
+            </Link>
+          )}
+          {isAdmin && (
+            <Link href={`/admin/users`} className={styles.linkHeading}>
+              Gerenciar Usuários
+            </Link>
+          )}
+          {canSyncCifra && (
+            <Link href={`/sync-cifra`} className={styles.linkHeading}>
+              Sincronizar CifraClub
+            </Link>
+          )}
           <button onClick={handleGoogleLogin} className={styles.googleButton}>
             <img
               src="https://www.svgrepo.com/show/475656/google-color.svg"
