@@ -75,10 +75,10 @@
 }
 
 .iconTd {
-  width: 2.5rem;
+  width: 2rem;
   text-align: center;
   vertical-align: middle;
-  font-size: 1.75rem;
+  font-size: 1.25rem;
 }
 
 .link {
@@ -235,4 +235,39 @@
   justify-content: center;
   font-size: 1.2rem;
   color: white;
+}
+
+.song {
+  display: flex;
+  align-items: center; /* centraliza verticalmente ícone e texto */
+  padding: 0.5rem 0;
+  gap: 0.5rem;
+}
+
+.iconTd {
+  flex-shrink: 0; /* ícone não encolhe */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px; /* largura fixa pro ícone */
+}
+
+.td {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.link {
+  white-space: normal;        /* permite quebra */
+  overflow-wrap: break-word;  /* quebra palavras grandes */
+  word-break: break-word;     /* quebra se precisar */
+  line-height: 1.2rem;        /* melhora leitura */
+}
+
+@media (max-width: 400px) {
+  .link {
+    white-space: normal; /* permite quebrar em telas muito pequenas */
+    overflow-wrap: break-word;
+  }
 }

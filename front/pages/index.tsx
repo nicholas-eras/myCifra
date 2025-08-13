@@ -180,21 +180,19 @@ function App() {
           {
             finalSongs.map((song) => (
               <div key={song.id} className={styles.song}>
-                <td className={styles.iconTd} onClick={() => handleSelectSong(song.id)}>
+                <div className={styles.iconTd} onClick={() => handleSelectSong(song.id)}>
                   {!playlist.includes(song.id) ? (
-                    <MdOutlineRadioButtonUnchecked
-                    />
+                    <MdOutlineRadioButtonUnchecked />
                   ) : (
-                    <FaCircleCheck
-                      style={{ color: "#DFF157" }}
-                    />
+                    <FaCircleCheck style={{ color: "#DFF157" }} />
                   )}
-                </td>
+                </div>
+
                 <td className={styles.td}>
-                  <Link href={`/${song.id}`} className={styles.link} style={{fontWeight: "bold", fontSize: "1.25rem"}}>
+                  <Link href={`/${song.id}`} className={styles.link} style={{fontWeight: "bold", fontSize: "1.2rem"}}>
                     {song.name}
                   </Link>
-                  <Link href={`/${song.id}`} className={styles.link} style={{fontSize: ".75rem"}}>
+                  <Link href={`/${song.id}`} className={styles.link} style={{fontSize: ".9rem"}}>
                     {song.artist}
                   </Link>                
                 </td>
