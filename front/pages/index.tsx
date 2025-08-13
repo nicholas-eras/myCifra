@@ -237,7 +237,7 @@ function App() {
         </div>
       </div>
       <div className={`${styles.startButtonWrapper} ${playlist.length > 0 ? styles.visible : ""}`}>
-        {playlist.length > 0 && (
+        {/* {playlist.length > 0 && (
           <div className={styles.playlistText}>
             <strong>Playlist:</strong>{" "}
             {playlist
@@ -248,7 +248,7 @@ function App() {
               .filter((name) => name)
               .join(", ")}
           </div>
-        )}
+        )} */}
         <button
           onClick={handleStartPlaylist}
           className={styles.startButton}
