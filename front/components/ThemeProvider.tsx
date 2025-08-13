@@ -10,16 +10,16 @@ interface ThemeContextProps {
 const ThemeContext = createContext<ThemeContextProps | undefined>(undefined);
 
 export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
-  const [theme, setTheme] = useState<Theme>("light");
+  const [theme, setTheme] = useState<Theme>("dark");
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-    const savedTheme = localStorage.getItem("theme") as Theme;
-    if (savedTheme) {
-      setTheme(savedTheme);
-      document.documentElement.setAttribute("data-theme", savedTheme);
-    }
+    const savedTheme = localStorage.getItem("theme") as Theme | null;
+    
+    const themeToSet = savedTheme || "dark";
+    setTheme(themeToSet);
+    document.documentElement.setAttribute("data-theme", themeToSet);
   }, []);
 
   useEffect(() => {

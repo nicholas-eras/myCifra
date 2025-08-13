@@ -152,9 +152,9 @@ function App() {
             <span style={{ fontSize: "1.8rem", fontWeight: "bold", color: "white" }}>MyCifra</span>
           </div>
 
-          <div>
+          {/* <div>
             <ThemeToggle />
-          </div>
+          </div> */}
         </div>
       <div className={styles["table-container"]}>
         <div className={styles.searchWrapper}>
