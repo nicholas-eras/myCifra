@@ -13,6 +13,7 @@ body {
   color: var(--text-color);
   transition: background-color 0.3s, color 0.3s;
 }
+@import url('https://fonts.googleapis.com/css2?family=Prompt:wght@400;700&display=swap');
 
 html,
 body {
@@ -20,8 +21,8 @@ body {
   overflow-x: hidden;
   margin: 0;
   padding: 0;
-  font-family: monospace;
-  font-size: 16px;
+  font-family: 'Prompt';
+  font-size: 20px;
 }
 
 /* The animation code */

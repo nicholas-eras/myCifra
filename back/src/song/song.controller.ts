@@ -36,6 +36,25 @@ export class SongController {
     return await this.songService.findAll(userId);
   }
 
+  @Get('artist/:artist')
+  async findByArtist(@Param('artist') artist: string, @Req() req: Request) {
+    const token = req.cookies?.token;
+    let userId: string | null = null;
+    
+    if (token) {
+      try {
+        const decoded = await this.jwtService.verifyAsync(token, {
+          secret: Buffer.from(process.env.JWT_PUBLIC_KEY!, 'base64'),
+          algorithms: ['RS256'],
+        });
+        userId = decoded.sub;
+      } catch (err) {
+        userId = null;
+      }
+    }
+    return await this.songService.findByArtist(artist, userId);
+  }
+
   @Get('withLyrics')
   async findAllWithLyrics(@Req() req: Request) {
     const token = req.cookies?.token;

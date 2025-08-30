@@ -13,12 +13,13 @@ export class SongService {
 
   async create(createSongDto: CreateSongDto) {
     const { name, artist, lyrics, createdBy } = createSongDto;
-
+    const artistSlug = artist.toLowerCase().replace(/\s+/g, '-');
     const newSong = await this.prisma.song.create({
       data: {
         name,
         artist,
-        createdBy
+        createdBy,
+        artistSlug
       },
     });
     
@@ -59,6 +60,31 @@ export class SongService {
         createdByUser: userId ? song.createdBy === userId || user?.isAdmin : false,
       })
     )};
+  }
+
+  async findByArtist(artist: string, userId: string | null) {
+    const songs = await this.prisma.song.findMany({
+      where: { artistSlug: artist }, 
+      orderBy: { name: 'asc' },
+      select: { id: true, name: true, artist: true, createdBy: true },
+    });
+
+    let user: User | null = null;
+    if (userId) {
+      user = await this.userService.findbyId(userId);
+    }
+
+    return {
+      isAdmin: user ? user.isAdmin : true,
+      songs: songs.map((song) => ({
+        id: song.id,
+        name: song.name,
+        artist: song.artist,
+        createdByUser: userId
+          ? song.createdBy === userId || user?.isAdmin
+          : false,
+      })),
+    };
   }
 
   async findOne(id: number, userId: string | null) {    

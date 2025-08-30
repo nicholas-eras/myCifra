@@ -95,6 +95,25 @@ const songService = {
     }
   },
 
+  async getSongsByArtist(artist: string): Promise<AllSongResponse | null> {
+    try {
+      const response = await fetch(`${API_URL}/song/artist/${encodeURIComponent(artist)}`, {
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        const errorJson = await response.json();
+        console.warn("Erro ao buscar músicas do artista:", errorJson);
+        return null;
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Falha no getSongsByArtist:', error);
+      return null;
+    }
+  },
+
   async getSongById(id: number): Promise<any> {
     try {
       const response = await fetch(`${API_URL}/song/${id}`, { credentials: 'include' });

@@ -1,15 +1,13 @@
-import { useEffect, useState } from "react";
-import styles from "../styles/index.module.css";
-import songService from "../service/app.service";
-import usersService from "../service/users.service";
 import Link from "next/link";
-import ThemeToggle from "../components/ThemeToggle";
-import { FaFilter, FaPen, FaSearch } from "react-icons/fa";
 import { useRouter } from "next/router";
-import { saveSongOffline, getOfflineSongs, saveUserPermissionsAndSongs, getUserPermissionsAndSongs } from '../service/indexedDb';
+import { useState, useEffect } from "react";
+import { FaSearch, FaPen, FaPlus } from "react-icons/fa";
 import { FaCircleCheck } from "react-icons/fa6";
 import { MdOutlineRadioButtonUnchecked } from "react-icons/md";
-import { FaPlus } from "react-icons/fa";
+import songService from "../../service/app.service";
+import { getUserPermissionsAndSongs, saveUserPermissionsAndSongs } from "../../service/indexedDb";
+import usersService from "../../service/users.service";
+import styles from "../../styles/index.module.css";
 
 function App() {
   const [songList, setSongList] = useState<any[]>([]);
@@ -21,6 +19,7 @@ function App() {
   const [searchTerm, setSearchTerm] = useState("");
   const [playlist, setPlaylist] = useState<number[]>([]);
   const router = useRouter();
+  const { artist } = router.query;
 
   const handleGoogleLogin = async () => {
     try {
@@ -37,31 +36,25 @@ function App() {
     }
   };
 
-  useEffect(() => {
+    useEffect(() => {
     const fetchData = async () => {
-      // 👇 se offline, pula direto pro IndexedDB
-      if (!navigator.onLine) {
-        console.warn("Sem internet, carregando dados offline...");
+        if (!artist || typeof artist !== "string") return;
+
+        if (!navigator.onLine) {
         const offlineData = await getUserPermissionsAndSongs();
         if (offlineData) {
-          setSongList(offlineData.songs || []);
-          setIsAdmin(offlineData.isAdmin || false);
-          setCanAddSong(offlineData.canAddSong || false);
-          setCanSyncCifra(offlineData.canSyncCifra || false);
-        } else {
-          console.error("Sem dados offline disponíveis.");
-          setSongList([]);
-          setIsAdmin(false);
-          setCanAddSong(false);
-          setCanSyncCifra(false);
+            setSongList(offlineData.songs || []);
+            setIsAdmin(offlineData.isAdmin || false);
+            setCanAddSong(offlineData.canAddSong || false);
+            setCanSyncCifra(offlineData.canSyncCifra || false);
         }
         return;
-      }
+        }
 
-      try {
+        try {
         const [songsData, userData] = await Promise.all([
-          songService.getAllSong(),
-          usersService.getMe(),
+            songService.getSongsByArtist(artist),
+            usersService.getMe(),
         ]);
 
         setSongList(songsData!.songs);
@@ -70,43 +63,28 @@ function App() {
         setCanSyncCifra(userData.canSyncCifra);
 
         await saveUserPermissionsAndSongs({
-          songs: songsData!.songs,
-          isAdmin: userData.isAdmin,
-          canAddSong: userData.canAddSong,
-          canSyncCifra: userData.canSyncCifra,
+            songs: songsData!.songs,
+            isAdmin: userData.isAdmin,
+            canAddSong: userData.canAddSong,
+            canSyncCifra: userData.canSyncCifra,
         });
-      } catch (error) {
-        console.warn("Erro inesperado:", error);
-        // Se der erro mesmo online, ainda tenta offline
+        } catch (error) {
         const offlineData = await getUserPermissionsAndSongs();
         if (offlineData) {
-          setSongList(offlineData.songs || []);
-          setIsAdmin(offlineData.isAdmin || false);
-          setCanAddSong(offlineData.canAddSong || false);
-          setCanSyncCifra(offlineData.canSyncCifra || false);
+            setSongList(offlineData.songs || []);
+            setIsAdmin(offlineData.isAdmin || false);
+            setCanAddSong(offlineData.canAddSong || false);
+            setCanSyncCifra(offlineData.canSyncCifra || false);
         }
-        else{
-          setSongList([]);
-          setIsAdmin(false);
-          setCanAddSong(false);
-          setCanSyncCifra(canSyncCifra || false);
         }
-      }
     };
 
     fetchData();
-  }, []);
+    }, [artist]);
 
-
-
-  const toggleSort = (field: "artist" | "name") => {
-    if (sortBy === field) {
-      setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
-    } else {
-      setSortBy(field);
-      setSortOrder("asc");
-    }
-  };
+  if (!artist || typeof artist !== "string") {
+    return <p>Carregando...</p>;
+  }
 
   const handleSelectSong = (id: number) => {
     setPlaylist((prev) =>
@@ -122,12 +100,6 @@ function App() {
     const queryString = playlist.join(",");
     router.push(`/playlist?ids=${queryString}`);
   };
-
-  async function baixarMusica() {
-    const songs = await songService.getAllSongsWithLyrics();    
-    await saveSongOffline(songs!.songs);
-    alert('Músicas salvas para uso offline!');
-  }
 
   // Combina filtro + ordenação
   const finalSongs = [...songList]
@@ -152,9 +124,6 @@ function App() {
             <span style={{ fontSize: "1.8rem", fontWeight: "bold", color: "white" }}>MyCifra</span>
           </div>
 
-          {/* <div>
-            <ThemeToggle />
-          </div> */}
         </div>
       <div className={styles["table-container"]}>
         <div className={styles.searchWrapper}>
@@ -170,10 +139,6 @@ function App() {
               <FaSearch />
             </span>
           </div>
-
-          {/* <button className={styles.filterButton}>
-            <FaFilter />
-          </button> */}
         </div>
 
         <div className={styles.songList}>
@@ -192,9 +157,9 @@ function App() {
                   <Link href={`/${song.id}`} className={styles.link} style={{fontWeight: "bold", fontSize: "1.2rem"}}>
                     {song.name}
                   </Link>
-                  <Link href={`/artist/${song.artist.toLowerCase().replace(/\s+/g, '-')}`} className={styles.link} style={{fontSize: ".9rem"}}>
+                  <Link href={`/artist/${song.artist}`} className={styles.link} style={{fontSize: ".9rem"}}>
                     {song.artist}
-                  </Link>             
+                  </Link>                
                 </div>
                 {(song.createdByUser || isAdmin) && (
                   <div style={{ textAlign: "center" }}>
@@ -233,21 +198,21 @@ function App() {
             />
             Entrar com Google
           </button>
+          <Link href="/">
+            <button style={{
+              padding: '5px 10px',
+              backgroundColor: 'red',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+            }}>
+              Voltar
+            </button>
+          </Link>
         </div>
       </div>
       <div className={`${styles.startButtonWrapper} ${playlist.length > 0 ? styles.visible : ""}`}>
-        {/* {playlist.length > 0 && (
-          <div className={styles.playlistText}>
-            <strong>Playlist:</strong>{" "}
-            {playlist
-              .map((id) => {
-                const song = songList.find((s) => s.id === id);
-                return song ? song.name : "";
-              })
-              .filter((name) => name)
-              .join(", ")}
-          </div>
-        )} */}
         <button
           onClick={handleStartPlaylist}
           className={styles.startButton}
@@ -260,8 +225,6 @@ function App() {
           INICIAR A PLAYLIST
         </button>
       </div>
-
-
     </>
   );
 }

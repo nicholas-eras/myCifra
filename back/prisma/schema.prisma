@@ -11,6 +11,7 @@ model Song {
   id     Int      @id @default(autoincrement())
   artist String
   name   String
+  artistSlug String  @default("")
   createdBy  String? 
   lyrics Lyric[]
 

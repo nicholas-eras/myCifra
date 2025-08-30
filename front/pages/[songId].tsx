@@ -44,7 +44,14 @@ function Song({ songId: propSongId }: { songId?: number }) {
   const tunes = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
   const tunesBemol = ["C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B"];
 
-  const [fontSize, setFontSize] = useState(16);
+  const [fontSize, setFontSize] = useState(() => {
+    if (typeof window !== "undefined") {
+      const size = window.getComputedStyle(document.body).fontSize;
+      return parseInt(size);
+    }
+    return 16;
+  });
+
   const fontSizeRelativeDiv = 100;
 
   const numRowsPerColumn = 20;
@@ -79,7 +86,6 @@ function Song({ songId: propSongId }: { songId?: number }) {
 
     setSong({ ...data, lyrics: normalizedLyrics });
   };
-
 
   useEffect(() => {
     const fetchData = async () => {
@@ -240,6 +246,10 @@ function Song({ songId: propSongId }: { songId?: number }) {
     // Marca que já aplicou
     appliedTranspose.current = true;
   }, [song]);
+
+  useEffect(() => {
+    localStorage.setItem("songTranspositions", JSON.stringify({"fontSize": fontSize}));
+  }, [fontSize]);
 
   const applyTransposition = (direction: string) => {
     setSong((prevSong: { lyrics: any[] }) => ({
@@ -409,7 +419,6 @@ function Song({ songId: propSongId }: { songId?: number }) {
       alert('Erro ao atualizar música');
     }
   };
-
 
   const changeTune = (increment: string) => {
     const stored = localStorage.getItem("songTranspositions");
