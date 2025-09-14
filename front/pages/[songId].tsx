@@ -657,6 +657,8 @@ function Song({ songId: propSongId }: { songId?: number }) {
               <MdOutlineTextDecrease onClick={() => {
                 setFontSize(fontSize - 1);
               }} />
+            </div>
+            <div className="change-font-size-action">
               {isLyricOnly ?
                 <IoMusicalNotesOutline onClick={() => setIsLyricOnly(false)} /> :
                 <IoMusicalNotes onClick={() => setIsLyricOnly(true)} />
@@ -673,6 +675,8 @@ function Song({ songId: propSongId }: { songId?: number }) {
               <HiHashtag style={{ marginLeft: '8px', marginRight: '4px', border: `${generalPreference == "#" ? 1 : 0}px solid black` }} onClick={() => {
                 setGeneralPreference("#");
               }} />
+            </div>
+            <div className="change-font-size-action">
               <span style={{ fontSize: "1.5rem", border: `${generalPreference == "b" ? 1 : 0}px solid black` }} onClick={() => {
                 setGeneralPreference("b");
               }}>♭</span>

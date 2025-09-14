@@ -35,7 +35,7 @@ export default function PlaylistPlayer() {
     debounceTimer.current = setTimeout(() => {
       setCurrentIndex(pendingIndex.current);
       debounceTimer.current = null;
-    }, 500);
+    }, 250);
   };
 
   const goToPrevious = () => {
@@ -59,11 +59,12 @@ export default function PlaylistPlayer() {
   }
 
   return (
-    <div style={{ maxWidth: "900px", margin: "0 auto", padding: "1rem" }}>
+    <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "1rem 0" }}>
       <div
         style={{
           display: "flex",
-          justifyContent: "space-between",
+          justifyContent: "center",
+          gap: "1rem",
           alignItems: "center",
           marginBottom: "1rem",
         }}

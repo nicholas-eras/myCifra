@@ -52,7 +52,7 @@
 @media screen and (max-width: 600px){
   .song-action{
     display: flex;
-    flex-direction: row;    
+    flex-direction: column;    
   }
 
   .changeColumn{
@@ -60,9 +60,7 @@
   }
 
   .tune{
-    display: flex;
-    justify-content: center;
-    gap: 1rem;
+    margin: 0 0 0 4.5rem;
   }
 
   .cifra-container > .song-info > div:nth-of-type(2){    
