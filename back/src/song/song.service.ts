@@ -37,7 +37,7 @@ export class SongService {
 
   async findAll(userId: string | null) {
     const songs = await this.prisma.song.findMany({
-      orderBy: { name: 'asc' },
+      orderBy: { id: 'desc' },
       select: {
         id: true,
         name: true,
