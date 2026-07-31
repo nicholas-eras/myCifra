@@ -5,7 +5,6 @@ import { FaSearch, FaPen, FaPlus } from "react-icons/fa";
 import { FaCircleCheck } from "react-icons/fa6";
 import { MdOutlineRadioButtonUnchecked } from "react-icons/md";
 import songService from "../../service/app.service";
-import { getUserPermissionsAndSongs, saveUserPermissionsAndSongs } from "../../service/indexedDb";
 import usersService from "../../service/users.service";
 import styles from "../../styles/index.module.css";
 
@@ -40,17 +39,6 @@ function App() {
     const fetchData = async () => {
         if (!artist || typeof artist !== "string") return;
 
-        if (!navigator.onLine) {
-        const offlineData = await getUserPermissionsAndSongs();
-        if (offlineData) {
-            setSongList(offlineData.songs || []);
-            setIsAdmin(offlineData.isAdmin || false);
-            setCanAddSong(offlineData.canAddSong || false);
-            setCanSyncCifra(offlineData.canSyncCifra || false);
-        }
-        return;
-        }
-
         try {
         const [songsData, userData] = await Promise.all([
             songService.getSongsByArtist(artist),
@@ -61,21 +49,12 @@ function App() {
         setCanAddSong(userData.canAddSong);
         setIsAdmin(userData.isAdmin);
         setCanSyncCifra(userData.canSyncCifra);
-
-        await saveUserPermissionsAndSongs({
-            songs: songsData!.songs,
-            isAdmin: userData.isAdmin,
-            canAddSong: userData.canAddSong,
-            canSyncCifra: userData.canSyncCifra,
-        });
         } catch (error) {
-        const offlineData = await getUserPermissionsAndSongs();
-        if (offlineData) {
-            setSongList(offlineData.songs || []);
-            setIsAdmin(offlineData.isAdmin || false);
-            setCanAddSong(offlineData.canAddSong || false);
-            setCanSyncCifra(offlineData.canSyncCifra || false);
-        }
+        console.error("Erro ao carregar dados:", error);
+        setSongList([]);
+        setIsAdmin(false);
+        setCanAddSong(false);
+        setCanSyncCifra(false);
         }
     };
 

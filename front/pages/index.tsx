@@ -6,7 +6,6 @@ import Link from "next/link";
 import ThemeToggle from "../components/ThemeToggle";
 import { FaFilter, FaPen, FaSearch } from "react-icons/fa";
 import { useRouter } from "next/router";
-import { saveSongOffline, getOfflineSongs, saveUserPermissionsAndSongs, getUserPermissionsAndSongs } from '../service/indexedDb';
 import { FaCircleCheck } from "react-icons/fa6";
 import { MdOutlineRadioButtonUnchecked } from "react-icons/md";
 import { FaPlus } from "react-icons/fa";
@@ -39,25 +38,6 @@ function App() {
 
   useEffect(() => {
     const fetchData = async () => {
-      // 👇 se offline, pula direto pro IndexedDB
-      if (!navigator.onLine) {
-        console.warn("Sem internet, carregando dados offline...");
-        const offlineData = await getUserPermissionsAndSongs();
-        if (offlineData) {
-          setSongList(offlineData.songs || []);
-          setIsAdmin(offlineData.isAdmin || false);
-          setCanAddSong(offlineData.canAddSong || false);
-          setCanSyncCifra(offlineData.canSyncCifra || false);
-        } else {
-          console.error("Sem dados offline disponíveis.");
-          setSongList([]);
-          setIsAdmin(false);
-          setCanAddSong(false);
-          setCanSyncCifra(false);
-        }
-        return;
-      }
-
       try {
         const [songsData, userData] = await Promise.all([
           songService.getAllSong(),
@@ -68,29 +48,12 @@ function App() {
         setCanAddSong(userData.canAddSong);
         setIsAdmin(userData.isAdmin);
         setCanSyncCifra(userData.canSyncCifra);
-
-        await saveUserPermissionsAndSongs({
-          songs: songsData!.songs,
-          isAdmin: userData.isAdmin,
-          canAddSong: userData.canAddSong,
-          canSyncCifra: userData.canSyncCifra,
-        });
       } catch (error) {
-        console.warn("Erro inesperado:", error);
-        // Se der erro mesmo online, ainda tenta offline
-        const offlineData = await getUserPermissionsAndSongs();
-        if (offlineData) {
-          setSongList(offlineData.songs || []);
-          setIsAdmin(offlineData.isAdmin || false);
-          setCanAddSong(offlineData.canAddSong || false);
-          setCanSyncCifra(offlineData.canSyncCifra || false);
-        }
-        else{
-          setSongList([]);
-          setIsAdmin(false);
-          setCanAddSong(false);
-          setCanSyncCifra(canSyncCifra || false);
-        }
+        console.error("Erro ao carregar dados:", error);
+        setSongList([]);
+        setIsAdmin(false);
+        setCanAddSong(false);
+        setCanSyncCifra(false);
       }
     };
 
@@ -122,12 +85,6 @@ function App() {
     const queryString = playlist.join(",");
     router.push(`/playlist?ids=${queryString}`);
   };
-
-  async function baixarMusica() {
-    const songs = await songService.getAllSongsWithLyrics();    
-    await saveSongOffline(songs!.songs);
-    alert('Músicas salvas para uso offline!');
-  }
 
   // Combina filtro + ordenação
   const finalSongs = [...songList]

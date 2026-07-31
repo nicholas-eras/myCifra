@@ -17,7 +17,6 @@ import Metronomo from '../components/Metronomo';
 import { PiMetronomeLight } from "react-icons/pi";
 import { PiMetronomeFill } from "react-icons/pi";
 import usersService from "../service/users.service";
-import { getOfflineSong, saveSongOffline } from '../service/indexedDb';
 
 function Song({ songId: propSongId }: { songId?: number }) {
   const router = useRouter();
@@ -37,9 +36,23 @@ function Song({ songId: propSongId }: { songId?: number }) {
   const [canEditChords, setCanEditChords] = useState(false);
   const [showMetronomo, setShowMetronomo] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [editingChordId, setEditingChordId] = useState<string | number | null>(null);
 
   const clickTimeout = useRef<NodeJS.Timeout | null>(null);
   const appliedTranspose = useRef(false);
+  const lastChordClickRef = useRef<{ id: string | number; time: number } | null>(null);
+  const chordDragRef = useRef<{
+    chordId: string | number;
+    startX: number;
+    startOffset: number;
+    wordLength: number;
+    isLineLevel: boolean;
+    moved: boolean;
+    chWidth: number;
+  } | null>(null);
+  const lastDragMovedRef = useRef(false);
+  const suppressNextClickRef = useRef(false);
+  const pendingEditRef = useRef<NodeJS.Timeout | null>(null);
 
   const tunes = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
   const tunesBemol = ["C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B"];
@@ -59,20 +72,15 @@ function Song({ songId: propSongId }: { songId?: number }) {
   const fetchSongData = async (id: number) => {
     let data;
 
-    if (navigator.onLine) {
-      try {
-        data = await songService.getSongById(id);
-        // await saveSongOffline(data);
-      } catch (error) {
-        console.warn("Erro ao buscar online. Tentando offline...");
-        data = await getOfflineSong(id);
-      }
-    } else {
-      data = await getOfflineSong(id);
+    try {
+      data = await songService.getSongById(id);
+    } catch (error) {
+      console.error("Erro ao buscar música:", error);
+      return;
     }
 
     if (!data) {
-      console.error("Música não encontrada nem online nem offline.");
+      console.error("Música não encontrada.");
       return;
     }
     const normalizedLyrics = data.lyrics.map((lyric: any) => ({
@@ -395,6 +403,212 @@ function Song({ songId: propSongId }: { songId?: number }) {
       return newSong;
     });
   };
+
+  const handleUpdateChord = (
+    chordId: string | number,
+    updates: { chord?: string; width?: string; offset?: number | string },
+  ) => {
+    setSong((prevSong: any) => ({
+      ...prevSong,
+      lyrics: prevSong.lyrics.map((lyric: any) => ({
+        ...lyric,
+        chords: lyric.chords.map((c: any) =>
+          c.id === chordId ? { ...c, ...updates } : c,
+        ),
+      })),
+    }));
+  };
+
+  const getNumericOffset = (chord: any) => {
+    if (typeof chord.offset === "string" && chord.offset.includes("px")) {
+      return parseFloat(chord.offset);
+    }
+    return typeof chord.offset === "number" ? chord.offset : parseFloat(chord.offset) || 0;
+  };
+
+  const getLineLevelOffsetStyle = (chord: any) =>
+    typeof chord.offset === "string" && chord.offset.includes("px")
+      ? chord.offset
+      : `${chord.offset}px`;
+
+  const handleChordMouseDown = (
+    e: React.MouseEvent<HTMLInputElement>,
+    chord: any,
+    options: { wordLength?: number; isLineLevel?: boolean },
+  ) => {
+    if (!canEditChords) return;
+    e.stopPropagation();
+
+    const now = Date.now();
+    const lastClick = lastChordClickRef.current;
+    const isSecondClick =
+      lastClick != null &&
+      lastClick.id === chord.id &&
+      now - lastClick.time < 350;
+    lastChordClickRef.current = { id: chord.id, time: now };
+
+    if (!isSecondClick) return;
+
+    if (pendingEditRef.current) {
+      clearTimeout(pendingEditRef.current);
+      pendingEditRef.current = null;
+    }
+
+    suppressNextClickRef.current = true;
+    e.currentTarget.readOnly = true;
+    e.currentTarget.blur();
+
+    const input = e.currentTarget;
+    chordDragRef.current = {
+      chordId: chord.id,
+      startX: e.clientX,
+      startOffset: getNumericOffset(chord),
+      wordLength: options.wordLength ?? 1,
+      isLineLevel: options.isLineLevel ?? false,
+      moved: false,
+      chWidth: parseFloat(getComputedStyle(input).fontSize) || fontSize,
+    };
+
+    const onMouseMove = (moveEvent: MouseEvent) => {
+      const drag = chordDragRef.current;
+      if (!drag) return;
+
+      const deltaX = moveEvent.clientX - drag.startX;
+      if (Math.abs(deltaX) > 3) drag.moved = true;
+      if (!drag.moved) return;
+
+      moveEvent.preventDefault();
+
+      if (drag.isLineLevel) {
+        handleUpdateChord(drag.chordId, {
+          offset: `${Math.max(0, drag.startOffset + deltaX)}px`,
+        });
+        return;
+      }
+
+      const deltaInCh = deltaX / drag.chWidth;
+      const newOffset = Math.max(
+        0,
+        Math.min(1, drag.startOffset + deltaInCh / drag.wordLength),
+      );
+      handleUpdateChord(drag.chordId, { offset: newOffset });
+    };
+
+    const onMouseUp = () => {
+      document.removeEventListener("mousemove", onMouseMove);
+      document.removeEventListener("mouseup", onMouseUp);
+      lastDragMovedRef.current = chordDragRef.current?.moved ?? false;
+      chordDragRef.current = null;
+    };
+
+    document.addEventListener("mousemove", onMouseMove);
+    document.addEventListener("mouseup", onMouseUp);
+  };
+
+  const handleChordClick = (e: React.MouseEvent<HTMLInputElement>, chord: any) => {
+    e.stopPropagation();
+
+    if (suppressNextClickRef.current) {
+      suppressNextClickRef.current = false;
+      return;
+    }
+
+    if (lastDragMovedRef.current) {
+      lastDragMovedRef.current = false;
+      return;
+    }
+
+    if (!canEditChords) {
+      const target = e.currentTarget;
+      if (clickTimeout.current) {
+        clearTimeout(clickTimeout.current);
+        clickTimeout.current = null;
+      } else {
+        clickTimeout.current = setTimeout(() => {
+          clickTimeout.current = null;
+          const rect = target.getBoundingClientRect();
+          setVisibleChord({
+            chordName: chord.chord,
+            x: rect.left,
+            y: rect.top,
+          });
+        }, 250);
+      }
+      return;
+    }
+
+    const input = e.currentTarget;
+    if (pendingEditRef.current) {
+      clearTimeout(pendingEditRef.current);
+    }
+    pendingEditRef.current = setTimeout(() => {
+      pendingEditRef.current = null;
+      if (suppressNextClickRef.current || lastDragMovedRef.current) return;
+      
+      // Seta o ID no estado para remover o readOnly
+      setEditingChordId(chord.id); 
+      
+      // Dá um micro delay para o React re-renderizar o input sem o readOnly antes de focar
+      setTimeout(() => {
+        input.focus();
+        input.select();
+      }, 0);
+    }, 250);
+  };
+
+  const handleChordBlur = (e: React.FocusEvent<HTMLInputElement>, chord: any) => {
+    if (!canEditChords) return;
+    
+    // Volta a travar o input
+    setEditingChordId(null); 
+
+    const value = e.currentTarget.value.trim();
+
+    if (value === "") {
+      handleDeleteChord(chord.id);
+      return;
+    }
+
+    // Você já chama o update no onChange, mas manter aqui garante a limpeza de espaços vazios
+    handleUpdateChord(chord.id, {
+      chord: value,
+      width: `${1 + value.length}ch`,
+    });
+  };
+
+  const handleChordDoubleClick = (e: React.MouseEvent<HTMLInputElement>, chord: any) => {
+    if (!canEditChords) return;
+
+    if (lastDragMovedRef.current) {
+      lastDragMovedRef.current = false;
+      return;
+    }
+
+    if (clickTimeout.current) {
+      clearTimeout(clickTimeout.current);
+      clickTimeout.current = null;
+    }
+
+    e.stopPropagation();
+    handleDeleteChord(chord.id);
+  };
+
+  const handleChordInput = (e: React.FormEvent<HTMLInputElement>, chord: any) => {
+    if (!canEditChords) return;
+    const input = e.currentTarget;
+    input.style.width = `${1 + input.value.length}ch`;
+  };
+
+  const handleChordChange = (e: React.ChangeEvent<HTMLInputElement>, chord: any) => {
+  if (!canEditChords) return;
+  const newValue = e.target.value;
+  
+  // Atualiza o estado da música em tempo real (o que automaticamente ajusta a largura)
+  handleUpdateChord(chord.id, {
+    chord: newValue,
+    width: `${1 + newValue.length}ch`,
+  });
+};
 
   const handleUpdateSong = async () => {
     if (!song) return;
@@ -737,12 +951,12 @@ function Song({ songId: propSongId }: { songId?: number }) {
                       height: "2ch",
                     }}
                   >
-                    {lyric.chords.map((chord: any, k: any) => {console.log(chord); return (
+                    {lyric.chords.map((chord: any, k: any) => (
                       <input
                         key={`block-${i}-row-${j}-${k}`}
                         style={{
                           width: chord.width || "auto",
-                          marginLeft: `${typeof chord.offset === "string" && chord.offset.includes("px") ? chord.offset : chord.offset + "px"}`,
+                          marginLeft: getLineLevelOffsetStyle(chord),
                           background: "transparent",
                           border: "none",
                           color: "orange",
@@ -751,10 +965,11 @@ function Song({ songId: propSongId }: { songId?: number }) {
                           position: "absolute",
                           fontSize: `${fontSize}px`,
                         }}
-                        readOnly
+                        readOnly={editingChordId !== chord.id}
                         value={chord.chord}
+                        onChange={(e) => handleChordChange(e, chord)}
                       />
-                    )})}
+                    ))}
                   </div>
                   )}                
                 return (
@@ -792,52 +1007,34 @@ function Song({ songId: propSongId }: { songId?: number }) {
                         key={`block-${i}-row-${j}-${k}`}
                         style={{
                           width: chord.width || "auto",
-                          marginLeft: `${typeof chord.offset === "string" && chord.offset.includes("px") ? chord.offset : chord.offset + "px"}`,
+                          marginLeft: getLineLevelOffsetStyle(chord),
                           background: "transparent",
-                          border: "none",
+                          border: canEditChords ? "1px dashed transparent" : "none",
                           color: "orange",
                           fontFamily: "monospace",
                           fontWeight: "bold",
                           position: "absolute",
                           fontSize: `${fontSize}px`,
+                          cursor: canEditChords ? "grab" : "pointer",
                         }}
-                        readOnly
+                        readOnly={editingChordId !== chord.id}
                         onMouseOver={(e) => {
+                          if (canEditChords) return;
                           e.currentTarget.style.cursor = "pointer";
                           e.currentTarget.style.border = "1px solid black";
                         }}
                         onMouseOut={(e) => {
+                          if (canEditChords) return;
                           e.currentTarget.style.cursor = "default";
                           e.currentTarget.style.border = "none";
                         }}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          const target = e.currentTarget;
-                          if (clickTimeout.current) {
-                            clearTimeout(clickTimeout.current);
-                            clickTimeout.current = null;
-                          } else {
-                            clickTimeout.current = setTimeout(() => {
-                              clickTimeout.current = null;
-                              const rect = target.getBoundingClientRect();
-                              setVisibleChord({
-                                chordName: chord.chord,
-                                x: rect.left,
-                                y: rect.top,
-                              });
-                            }, 250);
-                          }
-                        }}
-                        onDoubleClick={(e) => {
-                          if (!canEditChords) return;
-                          if (clickTimeout.current) {
-                            clearTimeout(clickTimeout.current);
-                            clickTimeout.current = null;
-                          }
-                          e.stopPropagation();
-                          handleDeleteChord(chord.id);
-                        }}
+                        onMouseDown={(e) => handleChordMouseDown(e, chord, { isLineLevel: true })}
+                        onClick={(e) => handleChordClick(e, chord)}
+                        onDoubleClick={(e) => handleChordDoubleClick(e, chord)}
+                        onBlur={(e) => handleChordBlur(e, chord)}
+                        onInput={(e) => handleChordInput(e, chord)}
                         value={chord.chord}
+                        onChange={(e) => handleChordChange(e, chord)}
                       />
                     ))}
                   </div>
@@ -865,31 +1062,23 @@ function Song({ songId: propSongId }: { songId?: number }) {
                       key={`block-${i}-row-${j}-${k}`}
                       style={{
                         width: chord.width || "auto",
-                        marginLeft: `${typeof chord.offset === "string" && chord.offset.includes("px") ? chord.offset : chord.offset + "px"}`,
+                        marginLeft: getLineLevelOffsetStyle(chord),
                         background: "transparent",
-                        border: "none",
+                        border: canEditChords ? "1px dashed transparent" : "none",
                         color: "orange",
                         fontFamily: "monospace",
                         fontWeight: "bold",
                         position: "absolute",
                         fontSize: `${fontSize}px`,
+                        cursor: canEditChords ? "grab" : "default",
                       }}
-                      readOnly
-                      onMouseOver={(e) => {
-                        e.currentTarget.style.cursor = "pointer";
-                        e.currentTarget.style.border = "1px solid black";
-                      }}
-                      onMouseOut={(e) => {
-                        e.currentTarget.style.cursor = "default";
-                        e.currentTarget.style.border = "none";
-                      }}
-                      onClick={(e) => {
-                        e.stopPropagation();                    
-                      }}
-                      onDoubleClick={(e) => {
-                        e.stopPropagation();
-                        handleDeleteChord(chord.id);
-                      }}
+                      readOnly={editingChordId !== chord.id} 
+                      onMouseDown={(e) => handleChordMouseDown(e, chord, { isLineLevel: true })}
+                      onClick={(e) => handleChordClick(e, chord)}
+                      onDoubleClick={(e) => handleChordDoubleClick(e, chord)}
+                      onBlur={(e) => handleChordBlur(e, chord)}
+                      onInput={(e) => handleChordInput(e, chord)}
+                      onChange={(e) => handleChordChange(e, chord)}
                       value={chord.chord}
                     />
                   ))}
@@ -943,49 +1132,34 @@ function Song({ songId: propSongId }: { songId?: number }) {
                                 left: `${chord.offset * word.length}ch`,
                                 background: "transparent",
                                 color: "orange",
-                                border: "1px solid transparent",
+                                border: canEditChords ? "1px dashed transparent" : "1px solid transparent",
                                 fontWeight: "bold",
                                 fontSize: `${fontSize}px`,
                                 fontFamily: "monospace",
                                 top: 0,
                                 position: "absolute",
+                                cursor: canEditChords ? "grab" : "pointer",
+                                zIndex: chordDragRef.current?.chordId === chord.id ? 20 : 1,
                               }}
-                              readOnly
+                              readOnly={editingChordId !== chord.id}
                               onMouseOver={(e) => {
+                                if (canEditChords) return;
                                 e.currentTarget.style.cursor = "pointer";
                                 e.currentTarget.style.border = "1px solid black";
                               }}
                               onMouseOut={(e) => {
+                                if (canEditChords) return;
                                 e.currentTarget.style.cursor = "default";
                                 e.currentTarget.style.border = "1px solid transparent";
                               }}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                const target = e.currentTarget;
-                                if (clickTimeout.current) {
-                                  clearTimeout(clickTimeout.current);
-                                  clickTimeout.current = null;
-                                } else {
-                                  clickTimeout.current = setTimeout(() => {
-                                    clickTimeout.current = null;
-                                    const rect = target.getBoundingClientRect();
-                                    setVisibleChord({
-                                      chordName: chord.chord,
-                                      x: rect.left,
-                                      y: rect.top,
-                                    });
-                                  }, 250);
-                                }
-                              }}
-                              onDoubleClick={(e) => {
-                                if (!canEditChords) return;
-                                if (clickTimeout.current) {
-                                  clearTimeout(clickTimeout.current);
-                                  clickTimeout.current = null;
-                                }
-                                e.stopPropagation();
-                                handleDeleteChord(chord.id);
-                              }}
+                              onMouseDown={(e) =>
+                                handleChordMouseDown(e, chord, { wordLength: word.length })
+                              }
+                              onClick={(e) => handleChordClick(e, chord)}
+                              onDoubleClick={(e) => handleChordDoubleClick(e, chord)}
+                              onBlur={(e) => handleChordBlur(e, chord)}
+                              onInput={(e) => handleChordInput(e, chord)}
+                              onChange={(e) => handleChordChange(e, chord)}
                               value={chord.chord}
                             />
                           ))}
