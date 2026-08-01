@@ -11,6 +11,36 @@ export class SongService {
 
   constructor(private prisma: PrismaService, private readonly userService: UsersService) {}
 
+  private toArtistSlug(artist: string) {
+    return artist.toLowerCase().replace(/\s+/g, '-');
+  }
+
+  private getMetadataFromLatestText(
+    song: { name: string; artist: string; SongText?: { lyrics: unknown }[] },
+  ) {
+    const latestText = song.SongText?.[0]?.lyrics as { name?: string; artist?: string } | undefined;
+
+    return {
+      name: latestText?.name ?? song.name,
+      artist: latestText?.artist ?? song.artist,
+    };
+  }
+
+  private async syncSongMetadata(
+    songId: number,
+    name: string,
+    artist: string,
+  ) {
+    return this.prisma.song.update({
+      where: { id: songId },
+      data: {
+        name,
+        artist,
+        artistSlug: this.toArtistSlug(artist),
+      },
+    });
+  }
+
   async create(createSongDto: CreateSongDto) {
     const { name, artist, lyrics, createdBy } = createSongDto;
     const artistSlug = artist.toLowerCase().replace(/\s+/g, '-');
@@ -42,8 +72,13 @@ export class SongService {
         id: true,
         name: true,
         createdBy: true,
-        artist: true
-      }    
+        artist: true,
+        SongText: {
+          orderBy: { createdAt: 'desc' },
+          take: 1,
+          select: { lyrics: true },
+        },
+      },
     });
 
     let user: User;
@@ -53,20 +88,38 @@ export class SongService {
     
     return {
       isAdmin: user! ? user?.isAdmin : false,
-      songs :songs.map(song => ({
-        id: song.id,
-        name: song.name,
-        artist: song.artist,
-        createdByUser: userId ? song.createdBy === userId || user?.isAdmin : false,
-      })
-    )};
+      songs :songs.map(song => {
+        const metadata = this.getMetadataFromLatestText(song);
+        return {
+          id: song.id,
+          name: metadata.name,
+          artist: metadata.artist,
+          createdByUser: userId ? song.createdBy === userId || user?.isAdmin : false,
+        };
+      }),
+    };
   }
 
   async findByArtist(artist: string, userId: string | null) {
     const songs = await this.prisma.song.findMany({
-      where: { artistSlug: artist }, 
       orderBy: { name: 'asc' },
-      select: { id: true, name: true, artist: true, createdBy: true },
+      select: {
+        id: true,
+        name: true,
+        artist: true,
+        createdBy: true,
+        SongText: {
+          orderBy: { createdAt: 'desc' },
+          take: 1,
+          select: { lyrics: true },
+        },
+      },
+    });
+
+    const normalizedArtist = artist.toLowerCase();
+    const filteredSongs = songs.filter((song) => {
+      const metadata = this.getMetadataFromLatestText(song);
+      return this.toArtistSlug(metadata.artist) === normalizedArtist;
     });
 
     let user: User | null = null;
@@ -76,14 +129,17 @@ export class SongService {
 
     return {
       isAdmin: user ? user.isAdmin : true,
-      songs: songs.map((song) => ({
-        id: song.id,
-        name: song.name,
-        artist: song.artist,
-        createdByUser: userId
-          ? song.createdBy === userId || user?.isAdmin
-          : false,
-      })),
+      songs: filteredSongs.map((song) => {
+        const metadata = this.getMetadataFromLatestText(song);
+        return {
+          id: song.id,
+          name: metadata.name,
+          artist: metadata.artist,
+          createdByUser: userId
+            ? song.createdBy === userId || user?.isAdmin
+            : false,
+        };
+      }),
     };
   }
 
@@ -167,18 +223,10 @@ export class SongService {
     )};
   }
 
-  async update(id: number, newSongDto: UpdateSongDto) {    
-    // const song = await this.prisma.song.update({
-    //   where:{
-    //     id
-    //   },
-    //   data:{
-    //     artist: newSongDto.artist,
-    //     name: newSongDto.name
-    //   }
-    // });
-
-    // await this.createLyrics(newSongDto, id);
+  async update(id: number, newSongDto: UpdateSongDto) {
+    if (newSongDto.name && newSongDto.artist) {
+      await this.syncSongMetadata(id, newSongDto.name, newSongDto.artist);
+    }
 
     const song = await this.prisma.songText.create({
       data: {
@@ -371,21 +419,8 @@ export class SongService {
   async updateChords(songId: number, updateSongChords: UpdateSongDto) {
     const { name, artist, lyrics } = updateSongChords;
 
-    const newSong = await this.prisma.song.update({
-      where:{
-        id: songId
-      },
-      data: {
-        name,
-        artist,
-      },
-    });
+    const newSong = await this.syncSongMetadata(songId, name!, artist!);
     
-    // if (!lyrics){
-    //   return newSong;
-    // }
-
-    // await this.updateLyrics(updateSongChords as UpdateSongDto, newSong.id);
     await this.prisma.songText.create({
       data: {
         songId: songId,

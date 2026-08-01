@@ -18,7 +18,7 @@ import { PiMetronomeLight } from "react-icons/pi";
 import { PiMetronomeFill } from "react-icons/pi";
 import usersService from "../service/users.service";
 
-function Song({ songId: propSongId }: { songId?: number }) {
+function Song({ songId: propSongId, initialSongData }: { songId?: number, initialSongData?: any }) {
   const router = useRouter();
   const routerSongId = router.query.songId;
 
@@ -69,30 +69,29 @@ function Song({ songId: propSongId }: { songId?: number }) {
 
   const numRowsPerColumn = 20;
 
-  const fetchSongData = async (id: number) => {
-    let data;
+  const normalizeSongData = (data: any) => {
+      const normalizedLyrics = data.lyrics.map((lyric: any) => ({
+        ...lyric,
+        chords: lyric.chords.map((chord: any) => ({
+          ...chord,
+          idOriginal: chord.id,
+          id: `${lyric.id}-${chord.id}`,
+        })),
+      }));
+      return { ...data, lyrics: normalizedLyrics };
+    };
 
+  const fetchSongData = async (id: number) => {
     try {
-      data = await songService.getSongById(id);
+      const data = await songService.getSongById(id);
+      if (!data) {
+        console.error("Música não encontrada.");
+        return;
+      }
+      setSong(normalizeSongData(data));
     } catch (error) {
       console.error("Erro ao buscar música:", error);
-      return;
     }
-
-    if (!data) {
-      console.error("Música não encontrada.");
-      return;
-    }
-    const normalizedLyrics = data.lyrics.map((lyric: any) => ({
-      ...lyric,
-      chords: lyric.chords.map((chord: any) => ({
-        ...chord,
-        idOriginal: chord.id,
-        id: `${lyric.id}-${chord.id}`, // apenas para o front, pois da bug na hora de excluir
-      })),
-    }));
-
-    setSong({ ...data, lyrics: normalizedLyrics });
   };
 
   useEffect(() => {
@@ -109,11 +108,16 @@ function Song({ songId: propSongId }: { songId?: number }) {
   }, []);
 
   useEffect(() => {
-    if (finalSongId) {
-      appliedTranspose.current = false; // resetar sempre que mudar música
+    appliedTranspose.current = false; // resetar sempre que mudar música
+    
+    if (initialSongData) {
+      // Se veio da Playlist, a música já tá pronta! É só plugar no state.
+      setSong(normalizeSongData(initialSongData));
+    } else if (finalSongId) {
+      // Se acessou a música direto pela rota normal, faz o fetch no backend
       fetchSongData(+finalSongId);
     }
-  }, [finalSongId]);
+  }, [finalSongId, initialSongData]);
 
   useEffect(() => {
     if (!song || !song.lyrics) { return }

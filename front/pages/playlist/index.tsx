@@ -1,13 +1,16 @@
 import { useRouter } from "next/router";
 import { useEffect, useRef, useState } from "react";
 import Song from "../[songId]";
+import songService from "../../service/app.service";
 
 export default function PlaylistPlayer() {
   const router = useRouter();
   const { ids } = router.query;
 
-  const [playlist, setPlaylist] = useState<number[]>([]);
+  // Agora guarda os objetos completos das músicas
+  const [playlist, setPlaylist] = useState<any[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Referências para acumular mudanças
   const pendingIndex = useRef(0);
@@ -19,9 +22,27 @@ export default function PlaylistPlayer() {
         .split(",")
         .map((id) => parseInt(id))
         .filter((n) => !isNaN(n));
-      setPlaylist(idArray);
-      setCurrentIndex(0);
-      pendingIndex.current = 0;
+
+      const fetchAllSongs = async () => {
+        setIsLoading(true);
+        try {
+          // Busca todas as músicas simultaneamente
+          const songsData = await Promise.all(
+            idArray.map((id) => songService.getSongById(id))
+          );
+          
+          // Filtra possíveis nulls/erros e salva a playlist completa
+          setPlaylist(songsData.filter(Boolean));
+          setCurrentIndex(0);
+          pendingIndex.current = 0;
+        } catch (error) {
+          console.error("Erro ao carregar playlist:", error);
+        } finally {
+          setIsLoading(false);
+        }
+      };
+
+      fetchAllSongs();
     }
   }, [ids]);
 
@@ -54,7 +75,7 @@ export default function PlaylistPlayer() {
     updateIndexWithDebounce(newIndex);
   };
 
-  if (playlist.length === 0) {
+  if (isLoading || playlist.length === 0) {
     return <div style={{ padding: "1rem" }}>Carregando playlist...</div>;
   }
 
@@ -102,7 +123,8 @@ export default function PlaylistPlayer() {
         </button>
       </div>
 
-      <Song songId={playlist[currentIndex]} />
+      {/* Passa o dado da música diretamente em vez do ID */}
+      <Song initialSongData={playlist[currentIndex]} />
     </div>
   );
 }
